@@ -74,11 +74,18 @@ def txt(s, left, top, w, h, size, color, *, bold=False, italic=False, align="lef
     return e
 
 
-def rect(left, top, w, h, fill, *, shape="rect", outline=None):
+def rect(left, top, w, h, fill, *, shape="rect", outline=None, shadow=False):
     e = {"id": new_id(), "type": "shape", "shapeType": shape, "left": left, "top": top, "width": w, "height": h, "fill": fill}
     if outline:
         e["outline"] = outline
+    if shadow:
+        e["shadow"] = True
     return e
+
+
+def card(left, top, w, h, fill, *, shape="roundRect", outline=None):
+    # A clean panel with a soft shadow — the default container for the new layouts.
+    return rect(left, top, w, h, fill, shape=shape, outline=outline, shadow=True)
 
 
 def hline(left, top, w, color, width=1):
@@ -745,12 +752,134 @@ def dashboard_layout(spec, pal):
     return _slide(els, remark=spec.get("notes"))
 
 
+def cases_layout(spec, pal):
+    """AI应用案例: grid of clean shadowed case cards (icon + title + scenario + metric)."""
+    els = header(spec.get("title", ""), pal)
+    cases = spec.get("cases", [])
+    n = max(1, len(cases))
+    cols = 3 if n > 4 else (n if n <= 3 else 2)
+    rows = (n + cols - 1) // cols
+    gap = 20
+    area_w, area_h = W - 2 * MARGIN, 350
+    cw = (area_w - (cols - 1) * gap) / cols
+    chh = (area_h - (rows - 1) * gap) / rows
+    for i, c in enumerate(cases):
+        r, col = divmod(i, cols)
+        x = MARGIN + col * (cw + gap)
+        y = 128 + r * (chh + gap)
+        color = accent_for(pal, i, c)
+        els.append(card(int(x), int(y), int(cw), int(chh), "#FFFFFF"))
+        els.append(rect(int(x) + 20, int(y) + 20, 44, 44, color, shape="roundRect"))
+        if c.get("icon"):
+            els.append(icon_img(c["icon"], "#FFFFFF", int(x) + 31, int(y) + 31, 22, 22))
+        if c.get("metric"):
+            els.append(txt(c["metric"], int(x) + int(cw) - 110, int(y) + 22, 96, 30, 20, color, bold=True, align="right", font=pal["font"]))
+        els.append(txt(c.get("title", ""), int(x) + 20, int(y) + 74, int(cw) - 40, 28, 16, pal["ink"], bold=True, font=pal["font"]))
+        els.append(txt(c.get("body", ""), int(x) + 20, int(y) + 104, int(cw) - 40, int(chh) - 120, 12, pal["muted"], font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def solution_layout(spec, pal):
+    """解决方案: 挑战 → 方案 → 价值, three shadowed panels with arrows; the middle is emphasized."""
+    els = header(spec.get("title", ""), pal)
+    stages = spec.get("stages")
+    if not stages:
+        stages = [spec.get(k, {}) for k in ("challenge", "solution", "value")]
+        labels = ["挑战", "方案", "价值"]
+        for s, lab in zip(stages, labels):
+            if isinstance(s, dict):
+                s.setdefault("title", lab)
+    n = max(1, len(stages))
+    arrow = 36
+    pw = (W - 2 * MARGIN - arrow * (n - 1)) / n
+    cy, ch = 150, 320
+    for i, st in enumerate(stages):
+        x = MARGIN + i * (pw + arrow)
+        emphasize = (i == 1 and n == 3)
+        color = pal["accents"][0] if emphasize else pal["accents"][min(i, len(pal["accents"]) - 1)]
+        head_h = 48
+        els.append(card(int(x), cy, int(pw), ch, pal["light"] if not emphasize else "#FFFFFF",
+                        outline=({"color": color, "width": 2} if emphasize else None)))
+        els.append(rect(int(x), cy, int(pw), head_h, color, shape="roundRect"))
+        els.append(txt(st.get("title", ""), int(x), cy, int(pw), head_h, 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        for j, it in enumerate(st.get("items", [])[:6]):
+            iy = cy + head_h + 16 + j * 38
+            els.append(rect(int(x) + 18, iy + 7, 8, 8, color, shape="ellipse"))
+            els.append(txt(str(it), int(x) + 34, iy, int(pw) - 48, 32, 13, pal["ink"], valign="middle", font=pal["font"]))
+        if i < n - 1:
+            els.append(txt("➜", int(x + pw), cy + ch / 2 - 20, arrow, 40, 22, pal["accents"][0], bold=True, align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def roadmap_layout(spec, pal):
+    """项目时程: phases along a timeline axis, each a colored segment + milestone + deliverables."""
+    els = header(spec.get("title", ""), pal)
+    phases = spec.get("phases", [])
+    n = max(1, len(phases))
+    axis_y = 250
+    seg_gap = 12
+    sw = (W - 2 * MARGIN - seg_gap * (n - 1)) / n
+    for i, ph in enumerate(phases):
+        x = MARGIN + i * (sw + seg_gap)
+        color = accent_for(pal, i, ph)
+        # phase bar
+        els.append(rect(int(x), axis_y, int(sw), 46, color, shape="roundRect", shadow=True))
+        name = ph.get("name", "") if isinstance(ph, dict) else str(ph)
+        time = ph.get("time", "") if isinstance(ph, dict) else ""
+        els.append(txt(name, int(x), axis_y, int(sw), 46, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if time:
+            els.append(txt(time, int(x), axis_y - 30, int(sw), 22, 13, color, bold=True, align="center", font=pal["font"]))
+        items = ph.get("items", []) if isinstance(ph, dict) else []
+        for j, it in enumerate(items[:5]):
+            iy = axis_y + 64 + j * 30
+            els.append(rect(int(x) + 8, iy + 7, 7, 7, color, shape="ellipse"))
+            els.append(txt(str(it), int(x) + 22, iy, int(sw) - 30, 26, 12, pal["ink"], valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def gantt_layout(spec, pal):
+    """甘特图: workstream rows × period columns with horizontal bars."""
+    els = header(spec.get("title", ""), pal)
+    periods = spec.get("periods", [])
+    tasks = spec.get("tasks", [])
+    np_ = max(1, len(periods))
+    label_w = 150
+    grid_x = MARGIN + label_w
+    grid_w = (W - MARGIN) - grid_x
+    col_w = grid_w / np_
+    top = 150
+    row_h = min(46, (470 - top) / max(1, len(tasks)))
+    # period headers + gridlines
+    for j, p in enumerate(periods):
+        cx = grid_x + j * col_w
+        els.append(txt(str(p), int(cx), top - 30, int(col_w), 24, 13, pal["ink"], bold=True, align="center", font=pal["font"]))
+        els.append(vline(int(cx), top, int(row_h * len(tasks)), pal["line"], 1))
+    els.append(vline(int(grid_x + grid_w), top, int(row_h * len(tasks)), pal["line"], 1))
+    for i, t in enumerate(tasks):
+        y = top + i * row_h
+        color = accent_for(pal, i, t)
+        els.append(txt(t.get("name", ""), MARGIN, int(y), label_w - 10, int(row_h), 13, pal["ink"], valign="middle", font=pal["font"]))
+        els.append(hline(grid_x, int(y + row_h), int(grid_w), pal["line"], 1))
+        start = int(t.get("start", 0))
+        span = int(t.get("span", 1))
+        bx = grid_x + start * col_w + 4
+        bw = span * col_w - 8
+        els.append(rect(int(bx), int(y + row_h * 0.22), int(bw), int(row_h * 0.56), color, shape="roundRect", shadow=True))
+        if t.get("label"):
+            els.append(txt(t["label"], int(bx), int(y + row_h * 0.22), int(bw), int(row_h * 0.56), 11, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
 LAYOUTS = {
     "title": title_layout,
     "cover": cover_layout,
     "section": section_layout,
     "bullets": bullets_layout,
     "agenda": agenda_layout,
+    "cases": cases_layout,
+    "solution": solution_layout,
+    "roadmap": roadmap_layout,
+    "gantt": gantt_layout,
     "two_column": two_column_layout,
     "cards": cards_layout,
     "kpi": kpi_layout,
@@ -778,5 +907,6 @@ LAYOUTS = {
 CONTENT_LAYOUTS = {
     "bullets", "agenda", "two_column", "cards", "kpi", "chart", "comparison",
     "process", "flow", "chevron", "hub", "dashboard", "architecture", "house",
+    "cases", "solution", "roadmap", "gantt",
     "timeline", "matrix", "hierarchy", "circles", "pyramid", "table", "image_text",
 }

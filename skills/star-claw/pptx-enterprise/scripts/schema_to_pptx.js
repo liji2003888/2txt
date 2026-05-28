@@ -107,6 +107,7 @@ for (const slide of deck.slides) {
         shapeOpts.line = { color: stripHash(el.outline.color || '#000000'), width: el.outline.width || 1 };
       }
       if (el.shapeType === 'roundRect') shapeOpts.rectRadius = el.rectRadius || 0.06;
+      if (el.shadow) shapeOpts.shadow = { type: 'outer', blur: 6, offset: 3, angle: 90, color: '8595A8', opacity: 0.35 };
       s.addShape(shapeMap[el.shapeType] || pres.ShapeType.rect, shapeOpts);
       if (el.text && el.text.content) {
         s.addText(stripHtml(el.text.content), {

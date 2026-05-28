@@ -44,17 +44,19 @@ const wrap = (text, width, sz) => {
 };
 
 let svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+svg += `<defs><filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#8595A8" flood-opacity="0.35"/></filter></defs>`;
 const bg = (slide.background && slide.background.color) || (deck.meta && deck.meta.theme && deck.meta.theme.backgroundColor) || '#FFFFFF';
 svg += `<rect width="${W}" height="${H}" fill="${bg}"/>`;
 for (const el of slide.elements || []) {
   const x = el.left, y = el.top, w = el.width, h = el.height;
   if (el.type === 'shape') {
     const fill = el.fill || '#CCCCCC';
-    if (el.shapeType === 'ellipse') svg += `<ellipse cx="${x + w / 2}" cy="${y + h / 2}" rx="${w / 2}" ry="${h / 2}" fill="${fill}"/>`;
-    else if (el.shapeType === 'triangle') svg += `<polygon points="${x + w / 2},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"/>`;
-    else if (el.shapeType === 'trapezoid') { const inset = w * 0.18; svg += `<polygon points="${x + inset},${y} ${x + w - inset},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"/>`; }
-    else if (el.shapeType === 'chevron') { const tip = Math.min(h * 0.5, w * 0.3); svg += `<polygon points="${x},${y} ${x + w - tip},${y} ${x + w},${y + h / 2} ${x + w - tip},${y + h} ${x},${y + h} ${x + tip},${y + h / 2}" fill="${fill}"/>`; }
-    else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${el.shapeType === 'roundRect' ? 8 : 0}" fill="${fill}"/>`;
+    const f = el.shadow ? ' filter="url(#sh)"' : '';
+    if (el.shapeType === 'ellipse') svg += `<ellipse cx="${x + w / 2}" cy="${y + h / 2}" rx="${w / 2}" ry="${h / 2}" fill="${fill}"${f}/>`;
+    else if (el.shapeType === 'triangle') svg += `<polygon points="${x + w / 2},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"${f}/>`;
+    else if (el.shapeType === 'trapezoid') { const inset = w * 0.18; svg += `<polygon points="${x + inset},${y} ${x + w - inset},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"${f}/>`; }
+    else if (el.shapeType === 'chevron') { const tip = Math.min(h * 0.5, w * 0.3); svg += `<polygon points="${x},${y} ${x + w - tip},${y} ${x + w},${y + h / 2} ${x + w - tip},${y + h} ${x},${y + h} ${x + tip},${y + h / 2}" fill="${fill}"${f}/>`; }
+    else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${el.shapeType === 'roundRect' ? 8 : 0}" fill="${fill}"${f}/>`;
   } else if (el.type === 'line') {
     const x1 = x + ((el.start && el.start[0]) || 0), y1 = y + ((el.start && el.start[1]) || 0);
     const x2 = x + ((el.end && el.end[0]) || w), y2 = y + ((el.end && el.end[1]) || 0);
