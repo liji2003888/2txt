@@ -64,6 +64,20 @@ def main() -> int:
             n = len([x for x in z.namelist() if x.startswith("ppt/slides/slide") and x.endswith(".xml")])
             ok &= check("valid OOXML", n == len(deck["slides"]), f"{n} slide XML parts")
 
+    # template (master) render path, if the theme defines a base template
+    theme = (deck.get("meta", {}).get("theme") or {})
+    base = theme.get("baseTemplate")
+    if base:
+        bp = (ROOT / base)
+        if bp.exists():
+            tpl_out = tmp / "deck_tpl.pptx"
+            r = subprocess.run([sys.executable, str(SCRIPTS / "schema_to_pptx_tpl.py"), str(deck_json), str(tpl_out)],
+                               capture_output=True, text=True)
+            ok &= check("template(master) -> .pptx", tpl_out.exists() and r.returncode == 0,
+                        (r.stderr.strip()[:200]) if not tpl_out.exists() else str(tpl_out))
+        else:
+            check("template(master) -> .pptx", True, f"skipped (missing {base})")
+
     print(f"\nArtifacts in {tmp}")
     return 0 if ok else 1
 

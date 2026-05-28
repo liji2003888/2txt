@@ -136,11 +136,14 @@ def icon_img(ref, color, left, top, w, h):
 
 def chrome_elements(theme: dict):
     # Persistent brand chrome: left red corner badge + right logo, on every light slide.
+    # Tagged role='chrome' so the template renderer can skip them (the master layout provides them).
     els = []
     bc = theme.get("badgeColor")
     if bc:
         els.append(rect(0, 0, 56, 58, bc))
     els.extend(logo_elements(theme))
+    for e in els:
+        e["role"] = "chrome"
     return els
 
 
@@ -526,10 +529,11 @@ def cover_layout(spec, pal):
     els = []
     if p:
         # Clean cover background image (red shape + photo); overlay only the editable fields.
-        els.append({"id": new_id(), "type": "image", "src": p, "left": 0, "top": 0, "width": W, "height": H})
+        # bg/deco tagged role='coverbg' so the template renderer skips them (the '空白' master layout provides them).
+        els.append({"id": new_id(), "type": "image", "src": p, "left": 0, "top": 0, "width": W, "height": H, "role": "coverbg"})
         deco = _asset(pal.get("coverDeco"))
         if deco:
-            els.append({"id": new_id(), "type": "image", "src": deco, "left": 746, "top": 5, "width": 197, "height": 161, "fixedRatio": True})
+            els.append({"id": new_id(), "type": "image", "src": deco, "left": 746, "top": 5, "width": 197, "height": 161, "fixedRatio": True, "role": "coverbg"})
         wm = _asset(pal.get("coverWordmark"))
         if wm:
             els.append({"id": new_id(), "type": "image", "src": wm, "left": 29, "top": 140, "width": 302, "height": 49, "fixedRatio": True})

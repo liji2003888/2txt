@@ -63,6 +63,13 @@ def build(outline: dict, theme: dict) -> dict:
             slide = LAYOUTS["bullets"](fallback, pal)
             layout = "bullets"
         slide.setdefault("background", {"type": "solid", "color": pal["bg"]})
+        # role drives the template renderer's master-layout choice; full=full-bleed colored slide
+        if layout == "cover":
+            slide["role"] = "cover"
+        elif layout in ("section", "quote", "closing"):
+            slide["role"] = "full"
+        else:
+            slide["role"] = "content"
         chrome_ok = layout != "cover" and spec.get("chrome", True)
         if chrome_ok and slide["background"].get("color") == pal["bg"]:
             slide["elements"].extend(chrome_elements(theme))

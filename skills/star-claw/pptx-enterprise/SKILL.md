@@ -15,6 +15,13 @@ This skill contains **no LLM calls** — every script is plain Python/Node. It w
 
 Choose by input:
 
+### Two ways to render a generated deck to .pptx
+
+- **`schema_to_pptx.js` (PptxGenJS)** — draws everything from primitives, including the brand chrome. No template needed; works for any theme. Use when there is no master template.
+- **`schema_to_pptx_tpl.py` (python-pptx, RECOMMENDED for TCL)** — renders the body onto slides created from a real **master template's layouts**, so the corner badge, olympic logo, slide number and cover background come **pixel-perfect from the master** (not redrawn), and the title sits where the template puts it (top). Requires the theme to set `baseTemplate` + layout names (`tcl_feishu` already does, pointing at `assets/csot_master.pptx`). Each deck slide carries a `role` (cover/content/full) that selects the master layout (`空白` / `标题幻灯片`). Elements tagged `role:"chrome"`/`"coverbg"` are skipped because the master provides them. Charts are not rendered on this path — use the PptxGenJS path if a slide needs a native chart, or pre-render the chart as an image.
+
+To add or update the master: strip example slides from a branded `.pptx` (keep masters/layouts) and point `baseTemplate` at it; set `contentLayout`/`coverLayout` to the layout names (see `python scripts/dump_pptx.py` / list via python-pptx `slide_layouts`).
+
 ### 1. From scratch (outline → deck)
 
 1. Author a **designed outline** (`outline.json`): a list of `slides`, each declaring a `layout` plus structured content. See `assets/examples/sample_outline.json`.

@@ -12,5 +12,8 @@
   "coverImage": "assets/csot_cover.png",
   "coverDeco": "assets/csot_cover_deco.png",
   "coverWordmark": "assets/csot_cover_wordmark.png",
+  "baseTemplate": "assets/csot_master.pptx",
+  "contentLayout": "标题幻灯片",
+  "coverLayout": "空白",
   "themeColors": ["#2563EB", "#0168CF", "#00B0EF", "#FABE0E", "#E60012", "#5C6B7D"]
 }
