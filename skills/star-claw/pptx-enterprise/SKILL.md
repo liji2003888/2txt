@@ -52,11 +52,35 @@ The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. **When omitted, 
 - Opens the .potx and injects content into **named placeholders in place**. Masters, layouts, theme, fonts, SmartArt, and animations are preserved verbatim.
 - **This is the authoritative path when brand consistency matters.** Do NOT round-trip a branded template through `pptx_to_schema.js` + `schema_to_pptx.js` for final output — that re-builds from primitives and loses the master/theme fidelity.
 
-### 3. Import existing .pptx for editing/preview
+### 3. Modify an existing .pptx in place (faithful tweaks) — preferred for "edit this deck"
+
+When the user hands you a finished deck and asks to change things while keeping the design:
+
+1. `python scripts/dump_pptx.py <in.pptx>` — lists every slide's shapes (index, name, text, table cells, pictures, positions) so you can target edits precisely.
+2. Author an ops file and run `python scripts/edit_pptx.py <in.pptx> <ops.json> <out.pptx>`. Everything not touched (masters, theme, fonts, SmartArt, animations, layout) is preserved.
+
+Supported ops (target shapes by `shape_index` — most reliable — or `shape` name):
+
+```json
+{"ops": [
+  {"op": "replace_text", "find": "小黑", "replace": "小白"},
+  {"op": "replace_text", "slide": 2, "find": "...", "replace": "..."},
+  {"op": "set_text", "slide": 1, "shape_index": 0, "text": ["第一行", "第二行"]},
+  {"op": "set_table_cell", "slide": 0, "shape": "表格 8", "row": 1, "col": 2, "text": "..."},
+  {"op": "set_chart_data", "slide": 7, "shape_index": 3, "categories": ["Q1","Q2"], "series": [{"name": "营收", "values": [1, 2]}]},
+  {"op": "replace_image", "slide": 6, "shape_index": 5, "path": "/abs/new.png"},
+  {"op": "duplicate_slide", "index": 4, "to": 5},
+  {"op": "delete_slide", "index": 9},
+  {"op": "reorder_slides", "order": [0, 2, 1, 3]}
+]}
+```
+
+Ops apply sequentially; indices refer to the deck state at each step, so list index-shifting ops (duplicate/delete/reorder) last. `replace_image` is a same-format blob swap. This is the right path when the deck's body lives in text boxes / auto-shapes rather than placeholders.
+
+### 3b. Import an existing .pptx to re-layout (lossy)
 
 - `node scripts/pptx_to_schema.js <in.pptx> <out.json>` (pptxtojson).
-- **Lossy** by design (masters/theme/SmartArt/animations are not preserved). Use only for letting users edit content in the Web shell.
-- For the final brand-perfect export, re-run path 2 against the original `.potx` carrying the edited content.
+- **Lossy** by design (masters/theme/SmartArt/animations are not preserved). Use only when you intend to *re-generate* the deck through our layouts/themes, not to tweak the original.
 
 ### 4. Always run visual QA after generation
 
