@@ -29,11 +29,22 @@ def palette(theme: dict) -> dict:
         "bg": theme.get("backgroundColor") or theme.get("bg") or "#FFFFFF",
         "badge": bool(theme.get("badgeColor")),
         "red": theme.get("badgeColor") or "#E60012",
+        "alert": theme.get("alert") or "#E60012",
+        "dark": theme.get("dark") or "#111111",
         "cover": theme.get("coverImage"),
         "coverDeco": theme.get("coverDeco"),
         "coverWordmark": theme.get("coverWordmark"),
         "master": bool(theme.get("baseTemplate")),
     }
+
+
+def accent_for(pal, i, item=None):
+    """Rotating blue-series accent, with an optional per-item key-node override:
+    item {"accent": "red"|"black"|"blue"|"#hex"} → red/black are reserved for key nodes."""
+    if isinstance(item, dict) and item.get("accent"):
+        a = str(item["accent"]).lower()
+        return {"red": pal["alert"], "black": pal["dark"], "blue": pal["accents"][0]}.get(a, item["accent"])
+    return pal["accents"][i % len(pal["accents"])]
 
 
 def _asset(path):
@@ -529,9 +540,15 @@ def pyramid_layout(spec, pal):
 
 
 def cover_layout(spec, pal):
-    # Master mode: the '空白' master layout provides the cover background (red shape + building +
-    # deco). We overlay ONLY the editable fields + the small white wordmark. No image-based cover.
+    # Cover background: drawn by the PptxGenJS path (image, tagged coverbg); the master path
+    # skips coverbg and uses its own '空白' layout background instead. Overlay editable fields + wordmark.
     els = []
+    bg = _asset(pal.get("cover"))
+    if bg:
+        els.append({"id": new_id(), "type": "image", "src": bg, "left": 0, "top": 0, "width": W, "height": H, "role": "coverbg"})
+    deco = _asset(pal.get("coverDeco"))
+    if deco:
+        els.append({"id": new_id(), "type": "image", "src": deco, "left": 746, "top": 5, "width": 197, "height": 161, "fixedRatio": True, "role": "coverbg"})
     wm = _asset(pal.get("coverWordmark"))
     if wm:
         els.append({"id": new_id(), "type": "image", "src": wm, "left": 29, "top": 140, "width": 302, "height": 49, "fixedRatio": True})
@@ -644,6 +661,90 @@ def house_layout(spec, pal):
     return _slide(els, remark=spec.get("notes"))
 
 
+def chevron_layout(spec, pal):
+    """箭头流程: a row of chevrons (numbered), each with title + sub, optional callout bubbles."""
+    els = header(spec.get("title", ""), pal)
+    steps = spec.get("steps") or spec.get("nodes") or []
+    n = max(1, len(steps))
+    cy, ch = 250, 70
+    overlap = 18
+    cw = (W - 2 * MARGIN + overlap * (n - 1)) / n
+    for i, st in enumerate(steps):
+        x = MARGIN + i * (cw - overlap)
+        color = accent_for(pal, i, st if isinstance(st, dict) else None)
+        title = st.get("title", "") if isinstance(st, dict) else str(st)
+        sub = st.get("sub", "") if isinstance(st, dict) else ""
+        note = st.get("note", "") if isinstance(st, dict) else ""
+        els.append({"id": new_id(), "type": "shape", "shapeType": "chevron", "left": int(x), "top": cy,
+                    "width": int(cw), "height": ch, "fill": color})
+        notch = int(min(ch * 0.5, cw * 0.3))  # chevron left indent — keep text clear of it
+        padL = notch + 14
+        tw = int(cw) - padL - 44
+        els.append(txt(title, int(x) + padL, cy + (12 if sub else 0), tw, ch - (32 if sub else 0), 16, "#FFFFFF", bold=True, valign="middle", font=pal["font"]))
+        if sub:
+            els.append(txt(sub, int(x) + padL, cy + 40, tw, 20, 11, "#DCEBFF", valign="middle", font=pal["font"]))
+        els.append(txt(str(i + 1), int(x + cw) - notch - 38, cy, 28, ch, 24, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if note:
+            above = i % 2 == 0
+            by = cy - 86 if above else cy + ch + 16
+            cxp = x + cw / 2 - 70
+            els.append(vline(int(x + cw / 2 - overlap / 2), (cy - 18) if above else (cy + ch), 0 if above else 1, pal["line"], 1))
+            els.append(rect(int(cxp), int(by), 150, 64, pal["light"], shape="roundRect"))
+            els.append(txt(note, int(cxp) + 10, int(by) + 8, 130, 48, 11, pal["ink"], align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def hub_layout(spec, pal):
+    """辐射图: central circle + satellite circles on a ring (+ optional side panels)."""
+    import math
+    els = header(spec.get("title", ""), pal)
+    primary = pal["accents"][0]
+    cx, cy = W / 2, 300
+    R = 96  # center radius
+    els.append(rect(int(cx - R), int(cy - R), 2 * R, 2 * R, primary, shape="ellipse"))
+    center = spec.get("center", "YOUR TITLE")
+    els.append(txt(center, int(cx - R), int(cy - 18), 2 * R, 36, 18, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    nodes = spec.get("nodes", [])
+    m = max(1, len(nodes))
+    ring, sr = 168, 40
+    for i, nd in enumerate(nodes):
+        ang = -math.pi / 2 + 2 * math.pi * i / m
+        sx = cx + ring * math.cos(ang)
+        sy = cy + ring * math.sin(ang)
+        color = accent_for(pal, i, nd if isinstance(nd, dict) else None)
+        label = nd.get("title", "") if isinstance(nd, dict) else str(nd)
+        els.append(rect(int(sx - sr), int(sy - sr), 2 * sr, 2 * sr, color, shape="ellipse"))
+        els.append(txt(label, int(sx - sr), int(sy - sr), 2 * sr, 2 * sr, 12, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def dashboard_layout(spec, pal):
+    """数据看板: top KPI strip + a main chart (left) + a pie/donut (right)."""
+    els = header(spec.get("title", ""), pal)
+    stats = spec.get("stats", [])[:3]
+    sw, sx0, sy0, sh = 252, MARGIN, 124, 70
+    for i, st in enumerate(stats):
+        x = sx0 + i * (sw + 14)
+        color = accent_for(pal, i, st if isinstance(st, dict) else None)
+        els.append(rect(int(x), sy0, sw, sh, color, shape="roundRect"))
+        els.append(txt(st.get("value", ""), int(x) + 16, sy0 + 8, sw - 32, 34, 26, "#FFFFFF", bold=True, font=pal["font"]))
+        els.append(txt(st.get("label", ""), int(x) + 16, sy0 + 44, sw - 32, 20, 12, "#EAF2FF", font=pal["font"]))
+    # main chart (left) + pie (right) as chart elements (resolved to images)
+    cy = sy0 + sh + 16
+    chh = 470 - cy
+    main = spec.get("chart")
+    if main:
+        els.append({"id": new_id(), "type": "chart", "left": MARGIN, "top": cy, "width": 520, "height": chh,
+                    "chartType": main.get("chartType", "area"), "data": {"labels": main.get("labels", []), "series": main.get("series", [])},
+                    "themeColors": pal["accents"]})
+    pie = spec.get("pie")
+    if pie:
+        els.append({"id": new_id(), "type": "chart", "left": MARGIN + 540, "top": cy, "width": 300, "height": chh,
+                    "chartType": pie.get("chartType", "donut"), "data": {"labels": pie.get("labels", []), "series": pie.get("series", [])},
+                    "themeColors": pal["accents"]})
+    return _slide(els, remark=spec.get("notes"))
+
+
 LAYOUTS = {
     "title": title_layout,
     "cover": cover_layout,
@@ -657,6 +758,9 @@ LAYOUTS = {
     "comparison": comparison_layout,
     "process": process_layout,
     "flow": flow_layout,
+    "chevron": chevron_layout,
+    "hub": hub_layout,
+    "dashboard": dashboard_layout,
     "architecture": architecture_layout,
     "house": house_layout,
     "timeline": timeline_layout,
@@ -673,6 +777,6 @@ LAYOUTS = {
 
 CONTENT_LAYOUTS = {
     "bullets", "agenda", "two_column", "cards", "kpi", "chart", "comparison",
-    "process", "flow", "architecture", "house",
+    "process", "flow", "chevron", "hub", "dashboard", "architecture", "house",
     "timeline", "matrix", "hierarchy", "circles", "pyramid", "table", "image_text",
 }

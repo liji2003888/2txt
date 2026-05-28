@@ -53,6 +53,7 @@ for (const el of slide.elements || []) {
     if (el.shapeType === 'ellipse') svg += `<ellipse cx="${x + w / 2}" cy="${y + h / 2}" rx="${w / 2}" ry="${h / 2}" fill="${fill}"/>`;
     else if (el.shapeType === 'triangle') svg += `<polygon points="${x + w / 2},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"/>`;
     else if (el.shapeType === 'trapezoid') { const inset = w * 0.18; svg += `<polygon points="${x + inset},${y} ${x + w - inset},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"/>`; }
+    else if (el.shapeType === 'chevron') { const tip = Math.min(h * 0.5, w * 0.3); svg += `<polygon points="${x},${y} ${x + w - tip},${y} ${x + w},${y + h / 2} ${x + w - tip},${y + h} ${x},${y + h} ${x + tip},${y + h / 2}" fill="${fill}"/>`; }
     else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${el.shapeType === 'roundRect' ? 8 : 0}" fill="${fill}"/>`;
   } else if (el.type === 'line') {
     const x1 = x + ((el.start && el.start[0]) || 0), y1 = y + ((el.start && el.start[1]) || 0);

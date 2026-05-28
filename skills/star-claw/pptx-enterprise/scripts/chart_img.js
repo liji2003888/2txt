@@ -28,16 +28,22 @@ function axisChart(c, W, H, font) {
   }
   const ng = labels.length || 1;
   const groupW = plotW / ng;
-  if (c.type === 'line') {
-    series.forEach((s, si) => {
+  if (c.type === 'line' || c.type === 'area') {
+    const baseY = padT + plotH;
+    // for area, draw larger-sum series first so smaller ones layer on top
+    const order = series.map((s, i) => i);
+    if (c.type === 'area') order.sort((a, b) => (series[b].values || []).reduce((x, y) => x + y, 0) - (series[a].values || []).reduce((x, y) => x + y, 0));
+    order.forEach((si) => {
+      const s = series[si];
       const col = colors[si % colors.length];
-      const pts = (s.values || []).map((v, i) => {
-        const x = padL + groupW * (i + 0.5);
-        const y = padT + plotH - (plotH * v) / niceMax;
-        return [x, y];
-      });
-      svg += `<polyline points="${pts.map((p) => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
-      pts.forEach((p) => { svg += `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${col}"/>`; });
+      const pts = (s.values || []).map((v, i) => [padL + groupW * (i + 0.5), padT + plotH - (plotH * v) / niceMax]);
+      if (c.type === 'area') {
+        const poly = `${padL + groupW * 0.5},${baseY} ` + pts.map((p) => p.join(',')).join(' ') + ` ${padL + groupW * (pts.length - 0.5)},${baseY}`;
+        svg += `<polygon points="${poly}" fill="${col}" fill-opacity="0.85"/>`;
+      } else {
+        svg += `<polyline points="${pts.map((p) => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+        pts.forEach((p) => { svg += `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${col}"/>`; });
+      }
     });
   } else {
     const ns = series.length || 1;

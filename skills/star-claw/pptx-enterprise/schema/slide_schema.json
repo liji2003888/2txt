@@ -125,7 +125,7 @@
           "required": ["shapeType"],
           "properties": {
             "type": { "const": "shape" },
-            "shapeType": { "enum": ["rect", "roundRect", "ellipse", "triangle", "diamond", "arrow", "star"] },
+            "shapeType": { "enum": ["rect", "roundRect", "ellipse", "triangle", "trapezoid", "chevron", "diamond", "arrow", "star"] },
             "fill": { "type": "string" },
             "rectRadius": { "type": "number", "description": "Corner radius in inches for roundRect" },
             "outline": {
