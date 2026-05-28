@@ -55,7 +55,13 @@ def build(outline: dict, theme: dict) -> dict:
     for spec in specs:
         layout = spec.get("layout", "bullets")
         fn = LAYOUTS.get(layout, LAYOUTS["bullets"])
-        slide = fn(spec, pal)
+        try:
+            slide = fn(spec, pal)
+        except Exception as exc:  # one malformed slide must not abort the whole deck
+            print(f"warning: layout '{layout}' failed ({exc}); falling back to bullets", file=sys.stderr)
+            fallback = {"title": spec.get("title", ""), "points": spec.get("points") or spec.get("bullets") or spec.get("items") or []}
+            slide = LAYOUTS["bullets"](fallback, pal)
+            layout = "bullets"
         slide.setdefault("background", {"type": "solid", "color": pal["bg"]})
         chrome_ok = layout != "cover" and spec.get("chrome", True)
         if chrome_ok and slide["background"].get("color") == pal["bg"]:

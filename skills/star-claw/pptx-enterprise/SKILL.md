@@ -7,6 +7,10 @@ description: Generate enterprise-grade presentations (TCL brand) as .pptx and HT
 
 A Skill for enterprise PPT generation. The Slide JSON Schema (`schema/slide_schema.json`) is the single source of truth; renderers project it to `.pptx` and HTML, and a separate path fills branded `.potx` templates in place for pixel-perfect brand fidelity.
 
+## Model-agnostic
+
+This skill contains **no LLM calls** — every script is plain Python/Node. It works with any agent model (Qwen, DeepSeek, Claude, …); the model only needs to (1) write a small JSON outline or edit-ops file following the examples here, and (2) run the commands below. The outline parser is forgiving (missing fields default; a malformed slide falls back to a bullet slide instead of aborting), and `scripts/validate.py` reports any schema problem before rendering. Prefer copying the templates in `assets/examples/` and editing values, rather than composing JSON from scratch.
+
 ## When to use which path
 
 Choose by input:
@@ -88,10 +92,20 @@ Ops apply sequentially; indices refer to the deck state at each step, so list in
 - `node scripts/pptx_to_schema.js <in.pptx> <out.json>` (pptxtojson).
 - **Lossy** by design (masters/theme/SmartArt/animations are not preserved). Use only when you intend to *re-generate* the deck through our layouts/themes, not to tweak the original.
 
+### 3c. Native editable cover from a template + generated content (one file)
+
+To put a real, still-editable template cover in front of a generated deck:
+
+1. `python scripts/flatten_cover.py <template.pptx> cover.pptx --title "材料标题" --dept "部门" --author "作者" [--keep 0]` — bakes the cover's layout background images onto the slide, fills the three fields, and keeps just that one self-contained slide.
+2. Generate the content deck without its own cover slide → `content.pptx`.
+3. `python scripts/merge_pptx.py content.pptx cover.pptx final.pptx --prepend` — prepends the cover; the content (including charts) is preserved natively.
+
+`merge_pptx` copies shapes + images (re-embedding them); it does **not** copy charts on the *added* slides — keep charts in the base deck. (Alternative single-file cover that needs no template at generation time: the `cover` layout with `theme.coverImage`, see Themes.)
+
 ### 4. Always run visual QA after generation
 
 - `python scripts/render_inspect.py <file.pptx> [out_dir]` renders each slide to PNG via LibreOffice + pdftoppm.
-- Inspect the PNGs (read them with the Read tool) and check: text overflow, element overlap, color/font deviation, missing CJK glyphs. Iterate on the JSON/template and re-render.
+- If the agent model has vision, open the PNGs and check: text overflow, element overlap, color/font deviation, missing CJK glyphs, then iterate. If the model has no vision, this step is manual (or skipped) — generation/validation does not depend on it.
 
 ## Schema essentials
 

@@ -31,6 +31,7 @@ def palette(theme: dict) -> dict:
         "red": theme.get("badgeColor") or "#E60012",
         "cover": theme.get("coverImage"),
         "coverDeco": theme.get("coverDeco"),
+        "coverWordmark": theme.get("coverWordmark"),
     }
 
 
@@ -527,6 +528,9 @@ def cover_layout(spec, pal):
         deco = _asset(pal.get("coverDeco"))
         if deco:
             els.append({"id": new_id(), "type": "image", "src": deco, "left": 746, "top": 5, "width": 197, "height": 161, "fixedRatio": True})
+        wm = _asset(pal.get("coverWordmark"))
+        if wm:
+            els.append({"id": new_id(), "type": "image", "src": wm, "left": 29, "top": 140, "width": 302, "height": 49, "fixedRatio": True})
         meta = spec.get("meta")
         if meta is None:
             meta = [
@@ -537,12 +541,12 @@ def cover_layout(spec, pal):
         if isinstance(meta, str):
             meta = [meta]
         for i, line in enumerate(meta):
-            els.append(txt(line, 26, 16 + i * 18, 470, 18, 10, "#FFFFFF", font=pal["font"]))
-        els.append(txt(spec.get("title", "材料标题"), 28, 214, 470, 80, 32, "#FFFFFF", bold=True, font=pal["font"]))
+            els.append(txt(line, 27, 18 + i * 18, 470, 18, 10, "#FFFFFF", font=pal["font"]))
+        els.append(txt(spec.get("title", "材料标题"), 27, 218, 470, 70, 36, "#FFFFFF", font=pal["font"]))
         if spec.get("dept"):
-            els.append(txt(spec["dept"], 33, 344, 440, 30, 18, "#FFFFFF", font=pal["font"]))
+            els.append(txt(spec["dept"], 32, 343, 440, 28, 20, "#FFFFFF", font=pal["font"]))
         if spec.get("author"):
-            els.append(txt(spec["author"], 33, 374, 440, 30, 18, "#FFFFFF", font=pal["font"]))
+            els.append(txt(spec["author"], 32, 373, 440, 28, 20, "#FFFFFF", font=pal["font"]))
         return _slide(els)
     # Fallback (no cover image yet): approximate TCL red cover — lacks the building photo.
     els.append(rect(0, 0, 560, H, red))
