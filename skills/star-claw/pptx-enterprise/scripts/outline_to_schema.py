@@ -4,9 +4,10 @@ import json
 import sys
 from pathlib import Path
 
-from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, logo_elements
+from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, chrome_elements
 
 CANVAS_W, CANVAS_H = 960, 540
+DEFAULT_THEME = Path(__file__).resolve().parent.parent / "assets" / "themes" / "tcl_feishu.json"
 
 
 def build(outline: dict, theme: dict) -> dict:
@@ -21,8 +22,8 @@ def build(outline: dict, theme: dict) -> dict:
         fn = LAYOUTS.get(layout, LAYOUTS["bullets"])
         slide = fn(spec, pal)
         slide.setdefault("background", {"type": "solid", "color": pal["bg"]})
-        if slide["background"].get("color") == pal["bg"] and spec.get("logo", True):
-            slide["elements"].extend(logo_elements(theme))
+        if slide["background"].get("color") == pal["bg"] and spec.get("chrome", True):
+            slide["elements"].extend(chrome_elements(theme))
         if layout in CONTENT_LAYOUTS:
             page += 1
             slide["elements"].extend(footer(pal, page))
@@ -43,9 +44,8 @@ def main() -> None:
         print("usage: outline_to_schema.py <outline.json> [branding.json]", file=sys.stderr)
         sys.exit(2)
     outline = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    theme: dict = {}
-    if len(sys.argv) >= 3:
-        theme = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+    theme_path = Path(sys.argv[2]) if len(sys.argv) >= 3 else DEFAULT_THEME
+    theme = json.loads(theme_path.read_text(encoding="utf-8")) if theme_path.exists() else {}
     deck = build(outline, theme)
     json.dump(deck, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")

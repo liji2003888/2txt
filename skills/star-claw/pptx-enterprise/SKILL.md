@@ -23,11 +23,11 @@ For one-off, highly custom slides you may emit `deck.json` directly per `schema/
 
 #### Layout catalog (`layouts.py`)
 
-`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `matrix` (capability matrix: N category columns × item lists), `hierarchy` (root box + connected tier cards), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
 
 #### Themes
 
-The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. Ships with `assets/tcl_branding.json` (default red), `assets/themes/tcl_feishu.json` (blue, extracted from the TCL AI+飞书 reference deck), and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` — so dark themes (e.g. `midnight`) recolor backgrounds and panels automatically. Author new themes by copying one of these.
+The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. **When omitted, the default is `assets/themes/tcl_feishu.json`** — so all generations share one content palette unless explicitly overridden. Also ships `assets/tcl_branding.json` (red) and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` (dark themes like `midnight` recolor backgrounds), and brand chrome: `logo` (right-corner image) + `badgeColor` (left-corner badge). When both are set, every light-background slide carries the same left + right corner badges, matching the TCL reference decks. Author new themes by copying one of these.
 
 #### Design rules — DO NOT produce text dumps
 

@@ -8,5 +8,6 @@
   "panel": "#E8F1FB",
   "line": "#CCE0FF",
   "logo": "assets/tcl_logo.png",
+  "badgeColor": "#E60012",
   "themeColors": ["#2563EB", "#0168CF", "#00B0EF", "#FABE0E", "#E60012", "#5C6B7D"]
 }

@@ -27,6 +27,7 @@ def palette(theme: dict) -> dict:
         "line": theme.get("line") or "#E2E6EC",
         "font": theme.get("fontName") or theme.get("font") or "",
         "bg": theme.get("backgroundColor") or theme.get("bg") or "#FFFFFF",
+        "badge": bool(theme.get("badgeColor")),
     }
 
 
@@ -75,11 +76,14 @@ def _slide(elements, background=None, remark=None):
 
 
 def header(title, pal):
-    return [
-        rect(MARGIN, 54, 8, 36, pal["primary"]),
-        txt(title, MARGIN + 20, 50, 700, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]),
-        hline(MARGIN, 104, W - 2 * MARGIN, pal["line"], 1),
-    ]
+    els = []
+    if pal.get("badge"):
+        els.append(txt(title, 84, 50, 660, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]))
+    else:
+        els.append(rect(MARGIN, 54, 8, 36, pal["primary"]))
+        els.append(txt(title, MARGIN + 20, 50, 700, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]))
+    els.append(hline(MARGIN, 104, W - 2 * MARGIN, pal["line"], 1))
+    return els
 
 
 def logo_elements(theme: dict):
@@ -97,6 +101,16 @@ def logo_elements(theme: dict):
         "id": new_id(), "type": "image", "src": str(p),
         "left": W - w - 24, "top": 18, "width": w, "height": h, "fixedRatio": True,
     }]
+
+
+def chrome_elements(theme: dict):
+    # Persistent brand chrome: left red corner badge + right logo, on every light slide.
+    els = []
+    bc = theme.get("badgeColor")
+    if bc:
+        els.append(rect(0, 0, 56, 58, bc))
+    els.extend(logo_elements(theme))
+    return els
 
 
 def footer(pal, page):
@@ -364,6 +378,59 @@ def image_text_layout(spec, pal):
     return _slide(els, remark=spec.get("notes"))
 
 
+def matrix_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    cols = spec.get("columns", [])
+    n = max(1, len(cols))
+    gap = 14
+    cw = (W - 2 * MARGIN - (n - 1) * gap) / n
+    top, hh = 130, 44
+    body_top = top + hh + 8
+    body_h = 472 - body_top
+    for i, c in enumerate(cols):
+        x = MARGIN + i * (cw + gap)
+        color = pal["accents"][i % len(pal["accents"])]
+        els.append(rect(int(x), top, int(cw), hh, color, shape="roundRect"))
+        els.append(txt(c.get("header", ""), int(x), top, int(cw), hh, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        els.append(rect(int(x), body_top, int(cw), int(body_h), pal["light"], shape="roundRect"))
+        items = (c.get("items") or [])[:6]
+        m = max(1, len(items))
+        for j, it in enumerate(items):
+            iy = body_top + 16 + j * ((body_h - 26) / m)
+            els.append(rect(int(x) + 16, int(iy) + 7, 6, 6, color, shape="ellipse"))
+            els.append(txt(str(it), int(x) + 30, int(iy), int(cw) - 44, 24, 12.5, pal["ink"], valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def hierarchy_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    cards = spec.get("cards", [])
+    n = max(1, len(cards))
+    rw, rh, ry = 200, 50, 128
+    rx = (W - rw) / 2
+    els.append(rect(int(rx), ry, rw, rh, pal["primary"], shape="roundRect"))
+    els.append(txt(spec.get("root", "Main Idea"), int(rx), ry, rw, rh, 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    gap, cy, ch = 18, 248, 206
+    cw = (W - 2 * MARGIN - (n - 1) * gap) / n
+    busy = ry + rh + 22
+    first_cx = MARGIN + cw / 2
+    els.append(vline(int(W / 2), int(ry + rh), int(busy - (ry + rh)), pal["line"], 1))
+    if n > 1:
+        els.append(hline(int(first_cx), int(busy), int((n - 1) * (cw + gap)), pal["line"], 1))
+    for i, c in enumerate(cards):
+        x = MARGIN + i * (cw + gap)
+        cxp = x + cw / 2
+        color = pal["accents"][i % len(pal["accents"])]
+        els.append(vline(int(cxp), int(busy), int(cy - busy), pal["line"], 1))
+        els.append(rect(int(x), cy, int(cw), ch, pal["light"], shape="roundRect"))
+        els.append(rect(int(x), cy, int(cw), 40, color, shape="roundRect"))
+        els.append(txt(c.get("title", ""), int(x), cy, int(cw), 40, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        els.append(rect(int(cxp - 22), cy + 54, 44, 44, color, shape="ellipse"))
+        els.append(txt(c.get("tag", str(i + 1)), int(cxp - 22), cy + 54, 44, 44, 18, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        els.append(txt(c.get("body", ""), int(x) + 16, cy + 106, int(cw) - 32, ch - 116, 12, pal["muted"], align="center", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
 LAYOUTS = {
     "title": title_layout,
     "section": section_layout,
@@ -376,6 +443,8 @@ LAYOUTS = {
     "comparison": comparison_layout,
     "process": process_layout,
     "timeline": timeline_layout,
+    "matrix": matrix_layout,
+    "hierarchy": hierarchy_layout,
     "statement": statement_layout,
     "table": table_layout,
     "image_text": image_text_layout,
@@ -385,5 +454,5 @@ LAYOUTS = {
 
 CONTENT_LAYOUTS = {
     "bullets", "agenda", "two_column", "cards", "kpi", "chart",
-    "comparison", "process", "timeline", "table", "image_text",
+    "comparison", "process", "timeline", "matrix", "hierarchy", "table", "image_text",
 }
