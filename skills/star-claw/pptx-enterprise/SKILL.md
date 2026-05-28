@@ -11,6 +11,16 @@ A Skill for enterprise PPT generation. The Slide JSON Schema (`schema/slide_sche
 
 This skill contains **no LLM calls** — every script is plain Python/Node. It works with any agent model (Qwen, DeepSeek, Claude, …); the model only needs to (1) write a small JSON outline or edit-ops file following the examples here, and (2) run the commands below. The outline parser is forgiving (missing fields default; a malformed slide falls back to a bullet slide instead of aborting), and `scripts/validate.py` reports any schema problem before rendering. Prefer copying the templates in `assets/examples/` and editing values, rather than composing JSON from scratch.
 
+## Step 0 · Research real content first (don't ship hollow slides)
+
+A deck full of generic, made-up bullet points is worthless. **Before composing, gather real material.** In OpenClaw you have a `web_search` skill (and other research tools) — use it:
+
+1. **Research the topic** — invoke `web_search` for the subject to collect accurate facts, current data/statistics, real examples and cases, definitions, and the standard structure for that material. Pull concrete numbers and named examples, not vague claims. Verify key facts across sources; don't invent statistics.
+2. **Find key images** — search for relevant diagrams, product shots, or illustrative photos; download them to the sandbox and use them via `image` / `imagecard` (e.g. a real architecture diagram, a screenshot, a product photo). A few real images make a deck feel substantive. Mind usage rights for external images.
+3. **Then outline** — turn the researched material into the deck's narrative (pick the material framework below), so every slide carries a real point backed by a fact, number, example, or image — not filler.
+
+Skip research only when the user supplied the content themselves. If a fact can't be verified, say so or leave it out — never fabricate data on a slide.
+
 ## Authoring slides: prefer the auto-layout engine (compose a tree)
 
 **To get designed, non-templated slides, author each slide as a layout TREE — do not just pick a fixed template.** A slide with a `"body"` tree is flowed by the auto-layout engine (`compose.py`): you decide the *structure*, the engine computes geometry (flexbox-style) so nothing overlaps and it adapts to the content. This is how to make decks that look bespoke rather than mechanical.
@@ -70,6 +80,16 @@ Composition recipes (combine, don't isolate):
 - Use `sizes` for asymmetry (`[2,1]`, `[3,2]`), mix a left structure with a right support column. Title should be a sentence ("AI 不取代人,但放大人"), not a label ("AI 介绍").
 
 Every slide must answer: *what's the ONE takeaway?* Put it in the title or the banner.
+
+### Write it 通俗易懂 (plain language)
+
+The audience is usually busy non-experts — make every slide instantly understandable:
+- **大白话优先**:用日常说法,避免术语堆砌。必须用专业词时,紧跟一句类比或解释("Token,就是模型眼里的‘字’")。
+- **多用类比、例子、数字**:抽象概念配一个具体例子或贴切类比;能用数字就用数字("省下 1 小时/天"胜过"显著提效")。
+- **短句、口语**:一句话讲一件事;标题写成人能脱口而出的结论句,不是名词标签。
+- **一页一个意思**:信息过载就拆成两页;宁可页多,不要一页塞满。
+- **贴近受众场景**:面向一线同事就讲他们的日常痛点与工具,不堆理论。
+- 正文每条都要"读完就懂",读者不需要再脑补。
 
 ### Pick the layout from the CONTENT SHAPE (do not default to cards)
 
