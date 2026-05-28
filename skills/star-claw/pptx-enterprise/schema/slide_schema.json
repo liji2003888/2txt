@@ -94,7 +94,11 @@
             "lineHeight": { "type": "number" },
             "wordSpace": { "type": "number" },
             "fill": { "type": "string" },
-            "opacity": { "type": "number" }
+            "opacity": { "type": "number" },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "align": { "enum": ["left", "center", "right"] },
+            "valign": { "enum": ["top", "middle", "bottom"] }
           }
         }
       ]
@@ -123,6 +127,14 @@
             "type": { "const": "shape" },
             "shapeType": { "enum": ["rect", "roundRect", "ellipse", "triangle", "diamond", "arrow", "star"] },
             "fill": { "type": "string" },
+            "rectRadius": { "type": "number", "description": "Corner radius in inches for roundRect" },
+            "outline": {
+              "type": "object",
+              "properties": {
+                "color": { "type": "string" },
+                "width": { "type": "number" }
+              }
+            },
             "fixedRatio": { "type": "boolean" },
             "text": {
               "type": "object",

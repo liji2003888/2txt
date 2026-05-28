@@ -6,33 +6,31 @@ import sys
 from pathlib import Path
 
 from pptx import Presentation
-from pptx.util import Pt
+from pptx.text.text import _Paragraph
 
 
 def _set_paragraph_text(paragraph, text: str) -> None:
     if paragraph.runs:
-        first = paragraph.runs[0]
-        first.text = text
+        paragraph.runs[0].text = text
         for run in paragraph.runs[1:]:
             run._r.getparent().remove(run._r)
     else:
-        run = paragraph.add_run()
-        run.text = text
+        paragraph.add_run().text = text
 
 
 def _fill_text_frame(tf, value) -> None:
-    lines = value if isinstance(value, list) else str(value).split("\n")
-    template_paragraph = tf.paragraphs[0]
-    template_xml = copy.deepcopy(template_paragraph._p)
+    lines = [str(x) for x in value] if isinstance(value, list) else str(value).split("\n")
+    lines = lines or [""]
+    template_xml = copy.deepcopy(tf.paragraphs[0]._p)
     for p in list(tf.paragraphs[1:]):
         p._p.getparent().remove(p._p)
-    _set_paragraph_text(template_paragraph, lines[0] if lines else "")
+    _set_paragraph_text(tf.paragraphs[0], lines[0])
+    anchor = tf.paragraphs[0]._p
     for line in lines[1:]:
         new_p = copy.deepcopy(template_xml)
-        template_paragraph._p.addnext(new_p)
-        from pptx.text.text import _Paragraph
-        wrapper = _Paragraph(new_p, tf)
-        _set_paragraph_text(wrapper, line)
+        anchor.addnext(new_p)
+        anchor = new_p
+        _set_paragraph_text(_Paragraph(new_p, tf), line)
 
 
 def fill(template_path: str, content_path: str, out_path: str) -> None:

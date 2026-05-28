@@ -66,18 +66,26 @@ for (const slide of deck.slides) {
         color: stripHash(el.defaultColor || '#000000'),
         fontFace: el.defaultFontName || themeFont,
         fill,
-        valign: 'top',
+        valign: el.valign || 'top',
       };
+      if (el.lineHeight) baseOpts.lineSpacingMultiple = el.lineHeight;
       if (bullets) {
         s.addText(
           bullets.map((t) => ({ text: t, options: { bullet: true } })),
-          baseOpts,
+          { ...baseOpts, align: el.align || 'left' },
         );
       } else {
         const text = stripHtml(el.content);
-        const bold = /<strong>|<b>/i.test(el.content || '');
-        const align = /text-align:\s*center/i.test(el.content || '') ? 'center' : 'left';
-        s.addText(text, { ...baseOpts, bold, align });
+        const bold = el.bold !== undefined ? !!el.bold : /<strong>|<b>/i.test(el.content || '');
+        const italic = el.italic !== undefined ? !!el.italic : /<em>|<i>/i.test(el.content || '');
+        const align =
+          el.align ||
+          (/text-align:\s*center/i.test(el.content || '')
+            ? 'center'
+            : /text-align:\s*right/i.test(el.content || '')
+              ? 'right'
+              : 'left');
+        s.addText(text, { ...baseOpts, bold, italic, align });
       }
     } else if (el.type === 'image') {
       s.addImage({ ...box, path: el.src });
@@ -92,7 +100,12 @@ for (const slide of deck.slides) {
         star: pres.ShapeType.star5,
       };
       const fill = { color: stripHash(el.fill || '#CCCCCC') };
-      s.addShape(shapeMap[el.shapeType] || pres.ShapeType.rect, { ...box, fill });
+      const shapeOpts = { ...box, fill };
+      if (el.outline) {
+        shapeOpts.line = { color: stripHash(el.outline.color || '#000000'), width: el.outline.width || 1 };
+      }
+      if (el.shapeType === 'roundRect') shapeOpts.rectRadius = el.rectRadius || 0.06;
+      s.addShape(shapeMap[el.shapeType] || pres.ShapeType.rect, shapeOpts);
       if (el.text && el.text.content) {
         s.addText(stripHtml(el.text.content), {
           ...box,

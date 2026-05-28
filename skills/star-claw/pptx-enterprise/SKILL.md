@@ -13,9 +13,25 @@ Choose by input:
 
 ### 1. From scratch (outline → deck)
 
-- Either run `scripts/outline_to_schema.py <outline.json> [branding.json]` to template a structured outline into slide JSON, **or** emit JSON directly conforming to `schema/slide_schema.json` (richer control).
-- Render to `.pptx`: `node scripts/schema_to_pptx.js <deck.json> <out.pptx>` (PptxGenJS).
-- Render to HTML: prefer the forked PPTist renderer in `web/` (online-editable). Fallback: `node scripts/schema_to_html.js <deck.json> <out.html>` for QA preview only.
+1. Author a **designed outline** (`outline.json`): a list of `slides`, each declaring a `layout` plus structured content. See `assets/examples/sample_outline.json`.
+2. `python scripts/outline_to_schema.py <outline.json> [branding.json] > deck.json` — dispatches each slide through the layout library (`scripts/layouts.py`), composing shapes + text + accents.
+3. `python scripts/validate.py deck.json` — validate before rendering.
+4. `node scripts/schema_to_pptx.js deck.json out.pptx` (PptxGenJS).
+5. HTML: prefer the forked PPTist renderer in `web/` (online-editable). Fallback: `node scripts/schema_to_html.js deck.json out.html` for QA preview only.
+
+For one-off, highly custom slides you may emit `deck.json` directly per `schema/slide_schema.json` instead of going through `outline_to_schema.py` — but still compose multiple elements; see the design rules below.
+
+#### Layout catalog (`layouts.py`)
+
+`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `quote`, `closing`. Content layouts get an auto brand footer + page number.
+
+#### Design rules — DO NOT produce text dumps
+
+- A slide is a **composition**, never a title + one `<ul>`. Every content slide carries an accent header bar, a divider, and colored markers/cards/panels.
+- Vary layouts across the deck: open with `title`/`agenda`, break sections with `section`, use `cards`/`kpi`/`chart`/`comparison` for substance, close with `quote`/`closing`.
+- Keep ≤ 6 items per slide; split dense content across `two_column` or `cards`.
+- Drive all color from `assets/tcl_branding.json` `themeColors`; never hardcode.
+- Run `scripts/render_inspect.py` and read the PNGs to confirm it looks designed, not listed.
 
 ### 2. Fill enterprise template (.potx with placeholders) — brand-fidelity path
 
@@ -52,12 +68,22 @@ The two outputs are **content-consistent, not pixel-consistent**. PowerPoint and
 
 `assets/tcl_branding.json` holds brand colors, font, and logo path. `outline_to_schema.py` and `schema_to_pptx.js` both read it (or default if absent).
 
-## Sandbox requirements
+## Sandbox requirements & self-check
 
 - Python ≥ 3.9 with `python-pptx`, `jsonschema` (see `requirements.txt`)
 - Node ≥ 18 with `pptxgenjs`, `pptxtojson` (see `package.json`)
 - `soffice` (LibreOffice headless, with Impress import filters) and poppler-utils (`pdftoppm` or `pdftocairo`) for QA rendering
 - CJK fonts installed: `Noto Sans CJK SC` or `Source Han Sans` (otherwise headless rendering corrupts Chinese)
+
+Setup (run once in the skill dir):
+
+```
+pip install -r requirements.txt
+npm install
+python scripts/smoke_test.py   # verifies runtime + generates a sample deck end to end
+```
+
+`smoke_test.py` is the runtime guarantee: it checks each tool, runs outline → schema → .pptx, and asserts the output is a designed composition (shapes/lines/charts present), not a text dump.
 
 ## License notice
 

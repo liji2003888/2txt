@@ -1,53 +1,82 @@
 {
   "title": "OpenClaw 企业级 PPT 能力",
-  "subtitle": "Schema 驱动的双产物架构",
-  "sections": [
+  "subtitle": "Schema 驱动 · 多版式设计 · 双产物输出",
+  "slides": [
     {
+      "layout": "title",
+      "title": "OpenClaw 企业级 PPT 能力",
+      "subtitle": "Schema 驱动 · 多版式设计 · 双产物输出",
+      "footer": "TCL · 内部技术方案 · 2026"
+    },
+    {
+      "layout": "agenda",
+      "title": "本次汇报",
+      "items": ["背景与目标", "技术架构", "关键能力指标", "落地路线图", "下一步"]
+    },
+    {
+      "layout": "section",
+      "index": "01",
       "title": "背景与目标",
-      "slides": [
-        {
-          "title": "为什么要做",
-          "bullets": [
-            "TCL 业务汇报/对外宣讲的 PPT 制作分散在各部门",
-            "缺乏统一品牌一致性与复用机制",
-            "AI 大模型已能生成内容,缺的是工程化承接"
-          ]
-        }
+      "subtitle": "为什么要把 PPT 生成做成一个企业能力"
+    },
+    {
+      "layout": "bullets",
+      "title": "现状痛点",
+      "points": [
+        {"head": "制作分散", "body": "各部门各自做汇报 PPT,品牌与排版不统一"},
+        {"head": "复用率低", "body": "缺乏模板与组件库,每次几乎从零开始"},
+        {"head": "AI 没接住", "body": "大模型能出内容,但缺工程化的版式承接"}
       ]
     },
     {
-      "title": "技术方案",
-      "slides": [
-        {
-          "title": "三大渲染路径",
-          "bullets": [
-            "从零生成:PptxGenJS + JSON",
-            "模板填充:python-pptx 原地改占位符(品牌保真)",
-            "Web 渲染:Fork PPTist(AGPL,内部隔离)"
-          ]
-        },
-        {
-          "title": "Schema 为单一真相源",
-          "bullets": [
-            "采用 PPTist 元素结构,px 单位,960×540 画布",
-            "支持 text/image/shape/line/table/chart/latex",
-            "渲染器是 Schema 的投影,不是各自重新建模"
-          ]
-        }
+      "layout": "two_column",
+      "title": "核心思路:Schema 为中心",
+      "left": {"title": "单一真相源", "body": "所有内容统一为 Slide JSON Schema,渲染器只是它的不同投影,而非各自重新建模。"},
+      "right": {"title": "任务路由渲染", "body": "从零生成走 PptxGenJS;品牌模板填充走 python-pptx 原地改;Web 在线编辑走 PPTist。"}
+    },
+    {
+      "layout": "cards",
+      "title": "三大渲染路径",
+      "cards": [
+        {"tag": "A", "title": "从零生成", "body": "PptxGenJS 把 JSON 渲染为可编辑 .pptx,适合无模板的快速成稿。"},
+        {"tag": "B", "title": "模板填充", "body": "python-pptx 原地替换 .potx 占位符,母版/主题/字体完全保真。"},
+        {"tag": "C", "title": "Web 渲染", "body": "Fork PPTist 提供在线编辑与 HTML 预览,经 Schema 隔离。"}
       ]
     },
     {
-      "title": "下一步",
-      "slides": [
-        {
-          "title": "里程碑",
-          "bullets": [
-            "M1:Schema + 从零 .pptx + 视觉 QA 回环",
-            "M2:Fork PPTist 进 web/,接通在线编辑",
-            "M3:接入 TCL 标准模板与品牌资产"
-          ]
-        }
+      "layout": "kpi",
+      "title": "目标能力指标",
+      "stats": [
+        {"value": "11", "label": "内置设计版式"},
+        {"value": "2x", "label": "输出格式 (.pptx / HTML)"},
+        {"value": "<30s", "label": "10 页成稿耗时"}
       ]
+    },
+    {
+      "layout": "chart",
+      "title": "各部门月度汇报量(示例)",
+      "chartType": "bar",
+      "labels": ["1月", "2月", "3月", "4月", "5月"],
+      "series": [
+        {"name": "研发", "values": [12, 18, 15, 22, 26]},
+        {"name": "市场", "values": [8, 10, 14, 13, 19]}
+      ]
+    },
+    {
+      "layout": "comparison",
+      "title": "自建 vs 直接调用 AiPPT",
+      "left": {"title": "自建(本方案)", "items": ["数据与模板自主可控", "深度集成五星AI岛", "可演进的 Schema"]},
+      "right": {"title": "直接调用外部", "items": ["上手快", "数据出域风险", "定制受限"]}
+    },
+    {
+      "layout": "quote",
+      "text": "PPT 生成的本质是结构化内容到设计版式的映射,而不是把字堆进一页。",
+      "author": "架构评审结论"
+    },
+    {
+      "layout": "closing",
+      "title": "谢谢",
+      "subtitle": "下一步:接入 TCL 标准模板,跑通在线编辑"
     }
   ]
 }
