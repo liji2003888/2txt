@@ -61,7 +61,20 @@ for (const el of slide.elements || []) {
     if (u) svg += `<image x="${x}" y="${y}" width="${w}" height="${h}" xlink:href="${u}" preserveAspectRatio="${el.fixedRatio ? 'xMidYMid meet' : 'none'}"/>`;
     else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#eeeeee" stroke="#999999"/>`;
   } else if (el.type === 'table') {
-    svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#cccccc"/>`;
+    const rows = el.data || [];
+    const nr = rows.length || 1;
+    const nc = (rows[0] || []).length || 1;
+    const cw = w / nc, rh = h / nr;
+    for (let r = 0; r < nr; r++) {
+      for (let c = 0; c < nc; c++) {
+        const cell = (rows[r] || [])[c] || {};
+        const cx = x + c * cw, cy = y + r * rh;
+        if (cell.fill) svg += `<rect x="${cx}" y="${cy}" width="${cw}" height="${rh}" fill="${cell.fill}"/>`;
+        svg += `<rect x="${cx}" y="${cy}" width="${cw}" height="${rh}" fill="none" stroke="#D9DEE5"/>`;
+        const ct = cell.text || '';
+        if (ct) svg += `<text x="${cx + cw / 2}" y="${cy + rh / 2 + 4}" font-size="12" fill="${cell.color || '#333'}" text-anchor="middle" font-family="sans-serif"${cell.bold ? ' font-weight="bold"' : ''}>${esc(ct)}</text>`;
+      }
+    }
   } else if (el.type === 'text') {
     const sz = el.fontSize || 18, color = el.defaultColor || '#000000';
     const lines = wrap(stripHtml(el.content), w, sz), lh = sz * 1.3;
