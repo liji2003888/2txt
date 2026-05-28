@@ -290,6 +290,10 @@ def _component(node, pal, x, y, w, h, els):
         n = max(1, len(items))
         arrow = 26
         nw = (w - arrow * (n - 1)) / n
+        # fixed band height, vertically centered (don't stretch to fill a tall box)
+        bh = min(h, 132)
+        y = y + (h - bh) / 2
+        h = bh
         for i, it in enumerate(items):
             it = it if isinstance(it, dict) else {"title": str(it)}
             nx = x + i * (nw + arrow)

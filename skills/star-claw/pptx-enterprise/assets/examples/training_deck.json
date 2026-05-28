@@ -28,6 +28,7 @@
     },
     {
       "title": "AI 如何工作 · 四步闭环",
+      "banner": {"text": "本质是「数据 → 规律 → 应用」的循环", "sub": "—— 数据越多、反馈越快,越聪明"},
       "body": {"type": "arrowflow", "items": [
         {"title": "数据", "sub": "采集与清洗"},
         {"title": "训练", "sub": "学习规律"},
@@ -50,6 +51,7 @@
     },
     {
       "title": "AI 能力发展时间线",
+      "banner": "十年从实验室走到工位 —— 现在是上手的最好时机",
       "body": {"type": "timeline", "items": [
         {"date": "2012", "title": "深度学习突破"},
         {"date": "2017", "title": "Transformer"},
@@ -59,6 +61,7 @@
     },
     {
       "title": "AI 技术分类",
+      "banner": "大模型与智能体,是这一轮落地的主角",
       "body": {"type": "orgchart",
         "root": {"title": "人工智能 AI"},
         "children": [

@@ -31,6 +31,46 @@ Components:
 
 Any item takes `"accent":"red"` (or `"black"`/hex) to mark a key node; icons always render white on chips.
 
+### Material frameworks (deck-level logic — choose by material type)
+
+Before composing slides, fix the **narrative skeleton** for the material type. A deck is an argument with a spine, not a pile of slides. Each framework lists the section flow, the golden rule, and the layout to use per section.
+
+**培训 / 教学 (Training)** — 认知阶梯 What→Why→How→Example→Practice→Summary.
+`cover → agenda → 是什么(hero/statement 下定义) → 为什么重要(stat/chart 给证据) → 怎么运作(arrowflow/architecture) → 能与不能(quadrant/balance) → 案例(imagecard/chart) → 上手三步(arrowflow/cards) → 一句话总结(quote) → closing`. 黄金法则:每页一个认知点,由浅入深,多用类比与对比。
+
+**工作汇报 / 述职 (Report)** — 结论先行 (BLUF / 金字塔原理).
+`cover → 一页结论(hero/statement:核心结论+3 论据) → 背景与目标(bullets/text) → 关键进展(timeline/chart+stat) → 数据成果(dashboard: chart+stat+gauge) → 问题与对策(comparison/quadrant) → 下一步与资源请求(arrowflow/bullets + banner) → closing`. 黄金法则:**先抛结论再展开**,数据支撑,最后给明确的 ask。
+
+**方案 / 解决方案 (Solution proposal)** — SCQA + 总分.
+`cover → 现状与痛点(bullets/regions/stat) → 目标(hero/statement) → 方案总览(architecture/house 一张全景图) → 关键设计(arrowflow/orgchart/grid 分点详述) → 价值与 ROI(stat/gauge/chart) → 实施路径(roadmap/gantt/milestone) → 风险与应对(quadrant/comparison) → 行动建议(banner) → closing`. 黄金法则:痛点要扎心,方案总览先给全景再拆解,价值要可量化。
+
+**项目复盘 (Review / retro)** — 目标vs结果 → 归因 → 沉淀.
+`cover → 目标 vs 结果(comparison/stat 对照) → 数据复盘(dashboard/chart) → 做对了什么(cards/bullets) → 问题与根因(quadrant/balance) → 改进项(progresslist/arrowflow) → 经验沉淀(quote/bullets) → closing`. 黄金法则:用数据对照目标,归因要到根,改进要可执行。
+
+**产品介绍 (Product intro)** — 痛点→定位→能力→差异→证据→获取.
+`cover → 用户痛点(statement/regions) → 产品定位(hero) → 核心能力(grid/iconitem 3–6) → 差异化(comparison/balance) → 案例与数据(imagecard/chart/stat) → 客户之声(personcard) → 获取方式(arrowflow/banner) → closing`. 黄金法则:从用户痛点切入而非功能罗列,差异化要鲜明,用案例与数字背书。
+
+**战略 / 规划 (Strategy)** — 洞察→愿景→路径→举措→里程碑.
+`cover → 外部洞察(chart/regions) → 机会与挑战(quadrant) → 愿景目标(hero/statement) → 战略框架(house 战略屋) → 关键举措(orgchart/cards) → 里程碑(roadmap/milestone) → 资源与组织(orgchart/stat) → closing`. 黄金法则:自上而下,用战略屋串起愿景-支柱-基础,举措对齐目标。
+
+If the material doesn't match these, build a custom spine but keep the discipline: **一条主线、总分结构、每节一个小结论、首页给全局**. Mirror the chosen spine in the `agenda` slide.
+
+### Compose each slide as ONE point, not a bare component
+
+A slide is an argument, not a widget. **Never output a slide whose body is a single bare component** (one lone chart, one lone card grid, one lone bullet list). Every content slide combines **2–3 elements** arranged as:
+
+> **【论点标题】** (the title states the conclusion, not the topic) + **【主视觉】** (the structure that proves it) + **【支撑/结论】** (a short takeaway, callouts, or context).
+
+Composition recipes (combine, don't isolate):
+- **数据页**: `chart` + 2–3 `stat`/`hero` callouts beside it (`row` `sizes:[2,1]`) + a one-line `banner` takeaway. Not a chart alone.
+- **结论页**: `hero`/`statement` (the claim) + `bullets` of 3 reasons beside or below it.
+- **流程/架构页**: the `arrowflow`/`orgchart`/`architecture` diagram + a `banner` saying what it means ("所以…").
+- **对比页**: `balance`/`comparison` + a verdict line (`banner` or a short `text`).
+- **要点页**: a `grid` of cards/iconitems, **but** lead with a 1-line framing `text` above and close with a `banner` — so it argues, not just lists.
+- Use `sizes` for asymmetry (`[2,1]`, `[3,2]`), mix a left structure with a right support column. Title should be a sentence ("AI 不取代人,但放大人"), not a label ("AI 介绍").
+
+Every slide must answer: *what's the ONE takeaway?* Put it in the title or the banner.
+
 ### Pick the layout from the CONTENT SHAPE (do not default to cards)
 
 The #1 failure mode is **every slide becoming a card/grid** → a monotonous "AI-flavored" deck. Avoid this: read what each slide is *doing* and pick the matching structure. Reference map:
