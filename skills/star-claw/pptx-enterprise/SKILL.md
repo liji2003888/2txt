@@ -21,7 +21,14 @@ This skill contains **no LLM calls** — every script is plain Python/Node. It w
 ```
 
 Containers: `row` / `col` / `grid` (`gap`, `sizes` weights for row, `cols` for grid) — nest freely.
-Components: `card` (`title`/`body`/`icon`/`metric`/`tag`/`tone:light|blue|navy`/`accent`), `stat` (`value`/`label`/`note`), `panel` (`title`/`tone`/`items:[...]`), `iconitem` (`icon`/`title`/`body`), `bullets` (`items`), `text` (`text`/`size`/`bold`/`align`), `chart` (`chartType`/`labels`/`series`), `image` (`src`), `spacer`.
+Components:
+- text/containers: `text` (`text`/`size`/`bold`/`align`), `bullets` (`items`), `spacer`
+- cards & panels: `card` (`title`/`body`/`icon`/`metric`/`tag`/`tone:light|blue|navy`/`accent`), `panel` (`title`/`tone`/`items:[...]`), `iconitem` (`icon`/`title`/`body`), `imagecard` (`src`/`title`/`body`), `personcard` (`avatar`/`name`/`role`/`quote`), `quote` (`text`/`author`/`tone`)
+- numbers & emphasis: `stat` (`value`/`label`/`note`), `hero` (`kicker`/`value`/`label`)
+- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`)
+- charts: `chart` (`chartType`: column/bar/line/area/pie/donut/radar; `labels`/`series`), `gauge` (进度环, `value`/`label`), `image` (`src`)
+
+Any item takes `"accent":"red"` (or `"black"`/hex) to mark a key node; icons always render white on chips.
 
 Design guidance:
 - Vary structure per slide to fit the content — a comparison is two `panel`s in a `row`; a dashboard is a `col` of a stat `row` + a chart `row` (`sizes:[2,1]`); a feature set is a `grid`. Don't reuse the same shape every slide.

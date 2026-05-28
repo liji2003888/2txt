@@ -119,6 +119,39 @@ function gaugeChart(c, W, H, font) {
   return svg;
 }
 
+function radarChart(c, W, H, font) {
+  const colors = c.colors && c.colors.length ? c.colors : DEF;
+  const labels = c.labels || [];
+  const series = c.series || [];
+  const n = Math.max(3, labels.length);
+  const cx = W / 2, cy = H / 2 + 4, r = Math.min(W, H) * 0.36;
+  let max = 0;
+  for (const s of series) for (const v of s.values || []) max = Math.max(max, v);
+  max = max || 1;
+  const pt = (i, frac) => { const a = -Math.PI / 2 + 2 * Math.PI * i / n; return [cx + r * frac * Math.cos(a), cy + r * frac * Math.sin(a)]; };
+  let svg = '';
+  for (let g = 1; g <= 3; g++) {
+    const pts = labels.map((_, i) => pt(i, g / 3).join(',')).join(' ');
+    svg += `<polygon points="${pts}" fill="none" stroke="#E4EAF2" stroke-width="1"/>`;
+  }
+  labels.forEach((lab, i) => {
+    const [ex, ey] = pt(i, 1);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" stroke="#E4EAF2" stroke-width="1"/>`;
+    const [lx, ly] = pt(i, 1.16);
+    svg += `<text x="${lx}" y="${ly + 4}" font-size="12" fill="#5C6B7D" text-anchor="middle" font-family="${font}">${esc(lab)}</text>`;
+  });
+  series.forEach((s, si) => {
+    const col = colors[si % colors.length];
+    const pts = (s.values || []).map((v, i) => pt(i, v / max).join(',')).join(' ');
+    svg += `<polygon points="${pts}" fill="${col}" fill-opacity="0.22" stroke="${col}" stroke-width="2.5"/>`;
+  });
+  series.forEach((s, si) => {
+    const lx = cx - r + si * 110;
+    svg += `<rect x="${lx}" y="6" width="12" height="12" rx="2" fill="${colors[si % colors.length]}"/><text x="${lx + 18}" y="16" font-size="11" fill="#333" font-family="${font}">${esc(s.name || '')}</text>`;
+  });
+  return svg;
+}
+
 function render(c) {
   const W = c.width || 760, H = c.height || 360;
   const font = c.font || 'sans-serif';
@@ -126,6 +159,7 @@ function render(c) {
   if (c.type === 'pie') inner = pieChart(c, W, H, font, false);
   else if (c.type === 'donut') inner = pieChart(c, W, H, font, true);
   else if (c.type === 'gauge') inner = gaugeChart(c, W, H, font);
+  else if (c.type === 'radar') inner = radarChart(c, W, H, font);
   else inner = axisChart(c, W, H, font);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#FFFFFF"/>${inner}</svg>`;
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: W * 2 } }).render().asPng();

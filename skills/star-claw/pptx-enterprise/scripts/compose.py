@@ -11,6 +11,14 @@ from layouts import txt, rect, card, icon_img, accent_for, _text_w, new_id, W, H
 PAD = 18  # inner padding for panels/cards
 
 
+def _lerp_hex(c1, c2, t):
+    a = c1.lstrip("#"); b = c2.lstrip("#")
+    if len(a) != 6 or len(b) != 6:
+        return c2
+    ch = lambda i: round(int(a[i:i + 2], 16) + (int(b[i:i + 2], 16) - int(a[i:i + 2], 16)) * t)
+    return f"#{ch(0):02X}{ch(2):02X}{ch(4):02X}"
+
+
 def _wrap_lines(text, w, size):
     if not text:
         return 0
@@ -75,6 +83,16 @@ def measure(node, pal, w):
         return node.get("h", 200)
     if t == "balance":
         return node.get("h", 280)
+    if t in ("radar",):
+        return node.get("h", 280)
+    if t == "heatmap":
+        return 40 + 34 * len(node.get("rows", [])) + 10
+    if t == "imagecard":
+        return node.get("h", 260)
+    if t == "personcard":
+        return max(150, PAD * 2 + _text_h(node.get("quote", ""), w - 120, 15) + 40)
+    if t == "regions":
+        return 30 * len(node.get("items", [])) + 10
     if t == "spacer":
         return node.get("h", 20)
     return 40
@@ -339,6 +357,72 @@ def _component(node, pal, x, y, w, h, els):
                 els.append(rect(int(px) + PAD, iy + 7, 7, 7, accent, shape="ellipse"))
                 els.append(txt(str(it), int(px) + PAD + 16, iy, int(pan_w) - 2 * PAD - 20, 24, 12.5, pal["ink"], valign="middle", font=pal["font"]))
                 iy += 28
+    elif t == "radar":
+        els.append({"id": new_id(), "type": "chart", "left": x, "top": y, "width": w, "height": h,
+                    "chartType": "radar", "data": {"labels": node.get("labels", []), "series": node.get("series", [])},
+                    "themeColors": pal["accents"]})
+    elif t == "heatmap":
+        cols = node.get("cols", [])
+        rows = node.get("rows", [])
+        nc = max(1, len(cols))
+        label_w = 110
+        cellw = (w - label_w) / nc
+        rh = 30
+        hy = y + 34
+        for j, cl in enumerate(cols):
+            els.append(txt(str(cl), int(x + label_w + j * cellw), y, int(cellw), 30, 12, pal["ink"], bold=True, align="center", valign="middle", font=pal["font"]))
+        for i, row in enumerate(rows):
+            row = row if isinstance(row, dict) else {"label": str(row), "values": []}
+            ry = hy + i * (rh + 2)
+            els.append(txt(row.get("label", ""), int(x), int(ry), label_w - 8, rh, 12, pal["ink"], valign="middle", font=pal["font"]))
+            for j, v in enumerate(row.get("values", [])[:nc]):
+                frac = max(0.0, min(1.0, float(v) / 100.0))
+                cellc = _lerp_hex("#EAF1FB", pal["primary"], frac)
+                cx = x + label_w + j * cellw
+                els.append(rect(int(cx) + 2, int(ry) + 1, int(cellw) - 4, rh - 2, cellc, shape="roundRect"))
+                els.append(txt(str(v), int(cx) + 2, int(ry) + 1, int(cellw) - 4, rh - 2, 11, ("#FFFFFF" if frac > 0.5 else pal["ink"]), align="center", valign="middle", font=pal["font"]))
+    elif t == "imagecard":
+        accent = accent_for(pal, node.get("_i", 0), node)
+        els.append(card(x, y, w, h, "#FFFFFF"))
+        ih = int(h * 0.52)
+        if node.get("src"):
+            els.append({"id": new_id(), "type": "image", "left": x, "top": y, "width": w, "height": ih, "src": node["src"], "fixedRatio": False})
+        else:
+            els.append(rect(x, y, w, ih, pal["panel"], shape="roundRect"))
+            els.append(txt("[image]", x, y, w, ih, 13, pal["muted"], align="center", valign="middle", font=pal["font"]))
+        els.append(rect(x, y + ih, 46, 4, accent))
+        els.append(txt(node.get("title", ""), x + PAD, y + ih + 12, w - 2 * PAD, 26, 16, pal["ink"], bold=True, font=pal["font"]))
+        if node.get("body"):
+            els.append(txt(node["body"], x + PAD, y + ih + 42, w - 2 * PAD, h - ih - 52, 12.5, pal["muted"], font=pal["font"]))
+    elif t == "personcard":
+        accent = accent_for(pal, node.get("_i", 0), node)
+        els.append(card(x, y, w, h, pal["light"]))
+        av = y + PAD
+        ax = x + PAD
+        if node.get("avatar"):
+            els.append({"id": new_id(), "type": "image", "left": ax, "top": av, "width": 64, "height": 64, "src": node["avatar"], "fixedRatio": True})
+        else:
+            els.append(rect(ax, av, 64, 64, accent, shape="ellipse"))
+            nm = node.get("name", "")
+            els.append(txt(nm[:1] if nm else "", ax, av, 64, 64, 26, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        tx = ax + 84
+        els.append(txt(node.get("quote", ""), tx, y + PAD, x + w - tx - PAD, h - 2 * PAD - 26, 15, pal["ink"], italic=True, font=pal["font"]))
+        els.append(txt((node.get("name", "") + ("  ·  " + node["role"] if node.get("role") else "")), tx, y + h - PAD - 22, x + w - tx - PAD, 22, 13, accent, bold=True, font=pal["font"]))
+    elif t == "regions":
+        items = node.get("items", [])
+        items = sorted(items, key=lambda r: (r.get("value", 0) if isinstance(r, dict) else 0), reverse=True)
+        mx = max((r.get("value", 0) for r in items if isinstance(r, dict)), default=1) or 1
+        label_w = 96
+        bar_max = w - label_w - 80
+        rh = 30
+        for i, r in enumerate(items):
+            r = r if isinstance(r, dict) else {"name": str(r), "value": 0}
+            ry = y + i * rh
+            accent = accent_for(pal, i, r)
+            els.append(txt(r.get("name", ""), x, ry, label_w - 8, rh - 6, 13, pal["ink"], valign="middle", font=pal["font"]))
+            bw = bar_max * (r.get("value", 0) / mx)
+            els.append(rect(x + label_w, ry + 4, max(4, int(bw)), rh - 12, accent, shape="roundRect"))
+            els.append(txt(str(r.get("value", "")), x + label_w + int(bw) + 8, ry, 72, rh - 6, 12, pal["muted"], valign="middle", font=pal["font"]))
     # spacer: nothing
 
 
