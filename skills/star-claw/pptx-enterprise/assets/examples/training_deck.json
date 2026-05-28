@@ -1,0 +1,98 @@
+{
+  "title": "AI 基础知识培训",
+  "_note": "Worked example: a teaching deck where EVERY content slide uses a different structure. Imitate this variety — do not turn everything into card grids.",
+  "slides": [
+    {
+      "layout": "cover",
+      "meta": "内部培训材料",
+      "title": "AI 基础知识培训",
+      "dept": "数字化转型中心",
+      "author": "讲师:小黑"
+    },
+    {
+      "layout": "agenda",
+      "title": "培训大纲",
+      "items": ["什么是 AI", "AI 如何工作", "大模型能与不能", "传统软件 vs AI", "能力发展时间线", "AI 技术分类", "典型应用与效果", "如何上手"]
+    },
+    {
+      "title": "什么是 AI",
+      "banner": {"text": "AI = 用数据训练出的、能感知-决策-行动的程序", "sub": "—— 不是魔法,是可解释的工程"},
+      "body": {"type": "row", "gap": 28, "sizes": [3, 2], "items": [
+        {"type": "hero", "kicker": "一句话定义", "value": "人工智能", "label": "让机器具备感知、学习、推理与行动能力的技术"},
+        {"type": "bullets", "items": [
+          {"text": "感知:看懂图像、听懂语音、读懂文本"},
+          {"text": "学习:从数据中归纳规律,而非写死规则"},
+          {"text": "推理:基于已学知识做判断与生成"},
+          {"text": "行动:调用工具完成任务并闭环"}]}
+      ]}
+    },
+    {
+      "title": "AI 如何工作 · 四步闭环",
+      "body": {"type": "arrowflow", "items": [
+        {"title": "数据", "sub": "采集与清洗"},
+        {"title": "训练", "sub": "学习规律"},
+        {"title": "推理", "sub": "生成结果"},
+        {"title": "反馈", "sub": "持续优化"}]}
+    },
+    {
+      "title": "大模型:能做什么 / 不能做什么",
+      "body": {"type": "quadrant", "items": [
+        {"title": "擅长 ✓", "items": ["语言理解与生成", "总结与改写", "代码辅助", "多轮对话"]},
+        {"title": "需谨慎 ⚠", "items": ["精确计算", "实时信息", "强逻辑推演"]},
+        {"title": "不能 ✗", "items": ["保证 100% 正确", "替代专业判断"], "accent": "red"},
+        {"title": "靠工具补足 ✦", "items": ["检索增强 RAG", "调用计算器/API", "联网搜索"]}]}
+    },
+    {
+      "title": "传统软件 vs AI",
+      "body": {"type": "balance",
+        "left": {"title": "传统软件", "items": ["规则写死", "确定性输出", "改需求改代码"]},
+        "right": {"title": "AI 应用", "items": ["从数据学习", "概率性输出", "给样例即可调整"]}}
+    },
+    {
+      "title": "AI 能力发展时间线",
+      "body": {"type": "timeline", "items": [
+        {"date": "2012", "title": "深度学习突破"},
+        {"date": "2017", "title": "Transformer"},
+        {"date": "2020", "title": "大模型涌现"},
+        {"date": "2023", "title": "生成式 AI 普及"},
+        {"date": "今天", "title": "Agent 落地"}]}
+    },
+    {
+      "title": "AI 技术分类",
+      "body": {"type": "orgchart",
+        "root": {"title": "人工智能 AI"},
+        "children": [
+          {"title": "机器学习", "items": ["监督学习", "无监督"]},
+          {"title": "深度学习", "items": ["CNN", "RNN"]},
+          {"title": "大模型", "items": ["LLM", "多模态"]},
+          {"title": "智能体", "items": ["规划", "工具调用"]}]}
+    },
+    {
+      "title": "典型应用与效果",
+      "body": {"type": "row", "gap": 20, "sizes": [2, 1], "items": [
+        {"type": "chart", "chartType": "column", "labels": ["邮件", "纪要", "问答", "审批"], "series": [{"name": "提效%", "values": [60, 70, 50, 80]}]},
+        {"type": "col", "gap": 14, "items": [
+          {"type": "gauge", "value": 85, "label": "员工满意度"},
+          {"type": "stat", "value": "540+", "label": "已接入 Agent"}]}
+      ]}
+    },
+    {
+      "title": "一句话记住 AI 的本质",
+      "body": {"type": "quote", "tone": "navy",
+        "text": "AI 不会取代你,但会用 AI 的人会。先从最烦你的那件重复工作开始。",
+        "author": "培训结语"}
+    },
+    {
+      "title": "如何上手 · 三步",
+      "body": {"type": "row", "gap": 18, "items": [
+        {"type": "card", "tone": "blue", "icon": "lucide/search", "title": "① 找痛点", "body": "每天最烦你的重复工作"},
+        {"type": "card", "tone": "light", "icon": "lucide/hammer", "title": "② 造助手", "body": "定义角色与任务,试跑调试"},
+        {"type": "card", "tone": "light", "icon": "lucide/sprout", "title": "③ 养起来", "body": "持续反馈,越用越懂你"}]}
+    },
+    {
+      "layout": "closing",
+      "title": "开始你的第一个 AI 助手",
+      "subtitle": "五星AI岛 · 即刻体验"
+    }
+  ]
+}

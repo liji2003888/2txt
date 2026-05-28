@@ -31,12 +31,37 @@ Components:
 
 Any item takes `"accent":"red"` (or `"black"`/hex) to mark a key node; icons always render white on chips.
 
-Design guidance:
-- Vary structure per slide to fit the content — a comparison is two `panel`s in a `row`; a dashboard is a `col` of a stat `row` + a chart `row` (`sizes:[2,1]`); a feature set is a `grid`. Don't reuse the same shape every slide.
-- Accent colors rotate across sibling items automatically (tech-blue series); set `"accent":"red"` on the one key node only.
-- Icons are white on colored chips, never black. Keep card bodies short; the engine prevents overlap but concise text reads better.
+### Pick the layout from the CONTENT SHAPE (do not default to cards)
 
-The fixed-template layouts below (`cards`, `process`, `kpi`, …) still work as quick presets and as examples of good composition, but the **tree is the primary, more flexible path**.
+The #1 failure mode is **every slide becoming a card/grid** → a monotonous "AI-flavored" deck. Avoid this: read what each slide is *doing* and pick the matching structure. Reference map:
+
+| Content shape | Use (NOT cards) |
+|---|---|
+| One definition / key idea / takeaway | `hero` (big term + explanation) or `statement`/`quote` — one focal slide, lots of whitespace |
+| A sequence / workflow / steps | `arrowflow` / `process` / `timeline` / `milestone` |
+| Two things compared | `balance` / `comparison` / two `panel`s in a `row` (one blue, one navy) |
+| Pros/cons, 2×2, SWOT | `quadrant` |
+| Taxonomy / hierarchy / org | `orgchart` / `hierarchy` |
+| Layered system / architecture | `architecture` / `house` |
+| Numbers / metrics / KPIs | `stat` row, `hero`, `gauge`, `chart` |
+| Distribution / ranking / proportion | `chart` (bar/pie/donut/radar), `regions`, `heatmap` |
+| Progress / maturity | `progresslist`, `gauge` |
+| 3–6 parallel features (cards OK here) | `grid` of `card`/`iconitem` — but only ~1 in every 3–4 slides |
+| A testimonial / voice | `personcard` |
+| A funnel / conversion | `funnel` |
+
+### Hard variety rules (self-check before finishing)
+
+1. **Never use the same primary structure on two consecutive content slides.** If slide N is a card grid, slide N+1 must be something else.
+2. **For a deck of ≥10 slides, use at least 6 distinct layout/component types** as the slide's primary structure. For ~20 slides, aim for 8–10 distinct types.
+3. **Cap cards/grids at ~⅓ of content slides.** When you catch yourself writing another card grid, convert it: a "types of X" list → `arrowflow` if sequential, `quadrant` if it's 4, `orgchart` if hierarchical, `hero`+`bullets` if one matters most.
+4. **Insert focal/breather slides.** Every few dense slides, add a `statement`/`quote`/`hero` single-idea slide and a `section` divider — varies rhythm and reads less mechanical.
+5. **Vary internal composition too:** alternate `row` vs `col` roots, use `sizes` (e.g. `[2,1]`) for asymmetry, mix `panel`/`iconitem`/`stat`, not always equal-width cards.
+6. Accent colors rotate automatically (tech-blue series); set `"accent":"red"` on **one** key node per slide at most. Icons are white on chips, never black. Keep body text short.
+
+Before returning a multi-slide deck, run **`python scripts/lint_variety.py <outline.json>`** — it classifies each slide's primary structure and FAILS if structures repeat consecutively, too few distinct types are used, or cards/grids exceed ⅓. Fix any flagged slides using the content-shape map above, then re-run until it reports `VARIETY OK`. See `assets/examples/training_deck.json` for a worked 12-slide deck where every slide uses a different structure (it passes the linter).
+
+The fixed-template layouts below (`cards`, `process`, `kpi`, …) are quick presets, but the **tree is the primary path** — and even with presets, obey the variety rules.
 
 ## When to use which path
 
