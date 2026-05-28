@@ -69,6 +69,40 @@
       "right": {"title": "直接调用外部", "items": ["上手快", "数据出域风险", "定制受限"]}
     },
     {
+      "layout": "process",
+      "title": "生成流程",
+      "steps": [
+        {"title": "出大纲", "body": "LLM 解析需求,产出结构化大纲"},
+        {"title": "转 Schema", "body": "大纲映射为设计版式 JSON"},
+        {"title": "渲染", "body": "PptxGenJS / 模板填充出稿"},
+        {"title": "视觉 QA", "body": "渲染成图,检查后迭代"}
+      ]
+    },
+    {
+      "layout": "timeline",
+      "title": "落地路线图",
+      "items": [
+        {"date": "M1", "title": "从零生成", "body": "Schema + .pptx + QA"},
+        {"date": "M2", "title": "在线编辑", "body": "接入 PPTist"},
+        {"date": "M3", "title": "企业模板", "body": "TCL 品牌保真填充"}
+      ]
+    },
+    {
+      "layout": "table",
+      "title": "三条路径能力对照",
+      "columns": ["路径", "品牌保真", "在线编辑", "适用"],
+      "rows": [
+        ["PptxGenJS 从零", "中", "否", "无模板快速成稿"],
+        ["python-pptx 模板", "高", "否", "企业品牌汇报"],
+        ["PPTist Web", "中", "是", "协作与预览"]
+      ]
+    },
+    {
+      "layout": "statement",
+      "subtitle": "一句话",
+      "text": "把结构化内容映射到设计版式,而不是把字堆进一页。"
+    },
+    {
       "layout": "quote",
       "text": "PPT 生成的本质是结构化内容到设计版式的映射,而不是把字堆进一页。",
       "author": "架构评审结论"

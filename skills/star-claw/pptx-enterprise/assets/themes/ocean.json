@@ -1,0 +1,11 @@
+{
+  "brand": "Ocean",
+  "fontName": "Noto Sans CJK SC",
+  "fontColor": "#0B2540",
+  "backgroundColor": "#FFFFFF",
+  "muted": "#5A7184",
+  "light": "#EEF4FB",
+  "panel": "#E1ECF7",
+  "line": "#D5E2EF",
+  "themeColors": ["#0F6FCD", "#12B5A6", "#F5A623", "#FF6B6B", "#7C5CFC", "#5A7184"]
+}

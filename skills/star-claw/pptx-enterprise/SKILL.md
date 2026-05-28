@@ -23,7 +23,11 @@ For one-off, highly custom slides you may emit `deck.json` directly per `schema/
 
 #### Layout catalog (`layouts.py`)
 
-`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `quote`, `closing`. Content layouts get an auto brand footer + page number.
+`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+
+#### Themes
+
+The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. Ships with `assets/tcl_branding.json` (default red) and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` — so dark themes (e.g. `midnight`) recolor backgrounds and panels automatically. Author new themes by copying one of these.
 
 #### Design rules — DO NOT produce text dumps
 
@@ -96,11 +100,14 @@ python scripts/smoke_test.py   # verifies runtime + generates a sample deck end 
 
 ## Progress notifications (long tasks)
 
-`scripts/notify_lark.py "<message>"` posts a one-line update to a Lark/Feishu custom-bot. It is a no-op unless `LARK_WEBHOOK` is set (and optionally `LARK_SECRET` for signed bots). Use it to ping key milestones during long generations:
+`scripts/notify_lark.py "<message>"` posts a one-line update to Lark/Feishu. It prefers a configured **Lark-CLI** and falls back to a webhook; it is a no-op if neither is set. Use it to ping key milestones during long generations.
 
-```
-LARK_WEBHOOK=... python scripts/notify_lark.py "PPT 生成完成:11 页,已导出 deck.pptx"
-```
+- **Lark-CLI (preferred)**: set `LARK_CLI_CMD` to your send command; the message is appended as the final argument (no shell, injection-safe). Example:
+  ```
+  export LARK_CLI_CMD="lark-cli message send --chat oc_xxx --text"
+  python scripts/notify_lark.py "PPT 生成完成:15 页,已导出 deck.pptx"
+  ```
+- **Webhook (fallback)**: set `LARK_WEBHOOK` (and `LARK_SECRET` for signed bots).
 
 ## License notice
 

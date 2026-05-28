@@ -1,0 +1,11 @@
+{
+  "brand": "Midnight",
+  "fontName": "Noto Sans CJK SC",
+  "fontColor": "#E8EAED",
+  "backgroundColor": "#0E1116",
+  "muted": "#9AA4B2",
+  "light": "#161C26",
+  "panel": "#1B2230",
+  "line": "#2A3342",
+  "themeColors": ["#4F8CFF", "#22D3A7", "#F5A623", "#FF6B6B", "#A78BFA", "#94A3B8"]
+}

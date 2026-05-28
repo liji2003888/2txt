@@ -17,13 +17,13 @@ def palette(theme: dict) -> dict:
         "primary": colors[0],
         "secondary": colors[1] if len(colors) > 1 else colors[0],
         "accents": colors,
-        "ink": theme.get("fontColor") or "#111111",
-        "muted": "#5B6470",
-        "light": "#F4F6F9",
-        "panel": "#EEF2F7",
-        "line": "#E2E6EC",
-        "font": theme.get("fontName") or "",
-        "bg": theme.get("backgroundColor") or "#FFFFFF",
+        "ink": theme.get("fontColor") or theme.get("ink") or "#111111",
+        "muted": theme.get("muted") or "#5B6470",
+        "light": theme.get("light") or "#F4F6F9",
+        "panel": theme.get("panel") or "#EEF2F7",
+        "line": theme.get("line") or "#E2E6EC",
+        "font": theme.get("fontName") or theme.get("font") or "",
+        "bg": theme.get("backgroundColor") or theme.get("bg") or "#FFFFFF",
     }
 
 
@@ -265,6 +265,84 @@ def closing_layout(spec, pal):
     return _slide(els, background={"type": "solid", "color": color}, remark=spec.get("notes"))
 
 
+def process_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    steps = spec.get("steps", [])
+    n = max(1, len(steps))
+    gap = 16
+    sw = (W - 2 * MARGIN - (n - 1) * gap) / n
+    cy = 200
+    for i, st in enumerate(steps):
+        x = MARGIN + i * (sw + gap)
+        color = pal["accents"][i % len(pal["accents"])]
+        els.append(rect(int(x + sw / 2 - 28), cy, 56, 56, color, shape="ellipse"))
+        els.append(txt(str(i + 1), int(x + sw / 2 - 28), cy, 56, 56, 24, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        els.append(txt(st.get("title", ""), int(x), cy + 70, int(sw), 28, 16, pal["ink"], bold=True, align="center", font=pal["font"]))
+        els.append(txt(st.get("body", ""), int(x), cy + 100, int(sw), 80, 12, pal["muted"], align="center", font=pal["font"]))
+        if i < n - 1:
+            els.append(rect(int(x + sw + 2), cy + 24, int(gap - 4), 8, pal["line"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def timeline_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    items = spec.get("items", [])
+    n = max(1, len(items))
+    cy = 268
+    els.append(hline(MARGIN, cy, W - 2 * MARGIN, pal["line"], 2))
+    step = (W - 2 * MARGIN) / n
+    for i, it in enumerate(items):
+        cx = MARGIN + i * step + step / 2
+        color = pal["accents"][i % len(pal["accents"])]
+        els.append(rect(int(cx - 9), cy - 9, 18, 18, color, shape="ellipse"))
+        els.append(txt(it.get("date", ""), int(cx - step / 2) + 8, cy - 74, int(step) - 16, 24, 14, color, bold=True, align="center", font=pal["font"]))
+        els.append(txt(it.get("title", ""), int(cx - step / 2) + 8, cy + 22, int(step) - 16, 26, 15, pal["ink"], bold=True, align="center", font=pal["font"]))
+        els.append(txt(it.get("body", ""), int(cx - step / 2) + 8, cy + 50, int(step) - 16, 70, 12, pal["muted"], align="center", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def statement_layout(spec, pal):
+    els = [
+        rect(MARGIN, 220, 80, 8, pal["primary"]),
+        txt(spec.get("text", ""), MARGIN, 250, W - 2 * MARGIN, 160, 38, pal["ink"], bold=True, valign="top", font=pal["font"]),
+    ]
+    if spec.get("subtitle"):
+        els.append(txt(spec["subtitle"], MARGIN, 200, W - 2 * MARGIN, 30, 16, pal["primary"], bold=True, font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def table_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    columns = spec.get("columns", [])
+    rows = spec.get("rows", [])
+    data = [[{"text": str(c), "bold": True, "fill": pal["primary"], "color": "#FFFFFF"} for c in columns]]
+    for r in rows:
+        data.append([{"text": str(c)} for c in r])
+    els.append({
+        "id": new_id(), "type": "table",
+        "left": MARGIN, "top": 132, "width": W - 2 * MARGIN, "height": 330,
+        "data": data,
+    })
+    return _slide(els, remark=spec.get("notes"))
+
+
+def image_text_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    side = spec.get("imageSide", "left")
+    img_x = MARGIN if side == "left" else MARGIN + 440
+    txt_x = MARGIN + 440 if side == "left" else MARGIN
+    if spec.get("image"):
+        els.append({"id": new_id(), "type": "image", "src": spec["image"], "left": img_x, "top": 132, "width": 376, "height": 330, "fixedRatio": True})
+    else:
+        els.append(rect(img_x, 132, 376, 330, pal["panel"], shape="roundRect"))
+        els.append(txt("[image]", img_x, 132, 376, 330, 16, pal["muted"], align="center", valign="middle", font=pal["font"]))
+    if spec.get("heading"):
+        els.append(txt(spec["heading"], txt_x, 150, 376, 36, 22, pal["ink"], bold=True, font=pal["font"]))
+    if spec.get("body"):
+        els.append(txt(spec["body"], txt_x, 200, 376, 260, 15, pal["muted"], font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
 LAYOUTS = {
     "title": title_layout,
     "section": section_layout,
@@ -275,8 +353,16 @@ LAYOUTS = {
     "kpi": kpi_layout,
     "chart": chart_layout,
     "comparison": comparison_layout,
+    "process": process_layout,
+    "timeline": timeline_layout,
+    "statement": statement_layout,
+    "table": table_layout,
+    "image_text": image_text_layout,
     "quote": quote_layout,
     "closing": closing_layout,
 }
 
-CONTENT_LAYOUTS = {"bullets", "agenda", "two_column", "cards", "kpi", "chart", "comparison"}
+CONTENT_LAYOUTS = {
+    "bullets", "agenda", "two_column", "cards", "kpi", "chart",
+    "comparison", "process", "timeline", "table", "image_text",
+}

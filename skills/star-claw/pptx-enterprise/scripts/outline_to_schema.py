@@ -20,6 +20,7 @@ def build(outline: dict, theme: dict) -> dict:
         layout = spec.get("layout", "bullets")
         fn = LAYOUTS.get(layout, LAYOUTS["bullets"])
         slide = fn(spec, pal)
+        slide.setdefault("background", {"type": "solid", "color": pal["bg"]})
         if layout in CONTENT_LAYOUTS:
             page += 1
             slide["elements"].extend(footer(pal, page))
@@ -42,13 +43,7 @@ def main() -> None:
     outline = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     theme: dict = {}
     if len(sys.argv) >= 3:
-        branding = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-        theme = {
-            "fontName": branding.get("fontName"),
-            "fontColor": branding.get("fontColor"),
-            "backgroundColor": branding.get("backgroundColor"),
-            "themeColors": branding.get("themeColors", []),
-        }
+        theme = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
     deck = build(outline, theme)
     json.dump(deck, sys.stdout, ensure_ascii=False, indent=2)
     sys.stdout.write("\n")

@@ -133,12 +133,23 @@ for (const slide of deck.slides) {
         },
       });
     } else if (el.type === 'table') {
-      const rows = (el.data || []).map((row) => row.map((cell) => ({ text: (cell && cell.text) || '' })));
+      const rows = (el.data || []).map((row) =>
+        row.map((cell) => {
+          const c = cell || {};
+          const options = {};
+          if (c.bold) options.bold = true;
+          if (c.color) options.color = stripHash(c.color);
+          if (c.fill) options.fill = { color: stripHash(c.fill) };
+          if (c.align) options.align = c.align;
+          return { text: c.text || '', options };
+        }),
+      );
       s.addTable(rows, {
         ...box,
         fontSize: 12,
         fontFace: themeFont,
-        border: { type: 'solid', pt: 1, color: 'CCCCCC' },
+        valign: 'middle',
+        border: { type: 'solid', pt: 1, color: 'D9DEE5' },
       });
     } else if (el.type === 'chart') {
       const chartTypeMap = {
