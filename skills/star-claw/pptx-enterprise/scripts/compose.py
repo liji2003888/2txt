@@ -93,6 +93,14 @@ def measure(node, pal, w):
         return max(150, PAD * 2 + _text_h(node.get("quote", ""), w - 120, 15) + 40)
     if t == "regions":
         return 30 * len(node.get("items", [])) + 10
+    if t == "progresslist":
+        return 42 * len(node.get("items", [])) + 8
+    if t == "pricing":
+        return node.get("h", 320)
+    if t == "milestone":
+        return node.get("h", 240)
+    if t == "orgchart":
+        return node.get("h", 300)
     if t == "spacer":
         return node.get("h", 20)
     return 40
@@ -423,6 +431,96 @@ def _component(node, pal, x, y, w, h, els):
             bw = bar_max * (r.get("value", 0) / mx)
             els.append(rect(x + label_w, ry + 4, max(4, int(bw)), rh - 12, accent, shape="roundRect"))
             els.append(txt(str(r.get("value", "")), x + label_w + int(bw) + 8, ry, 72, rh - 6, 12, pal["muted"], valign="middle", font=pal["font"]))
+    elif t == "progresslist":
+        items = node.get("items", [])
+        label_w = 150
+        track_x = x + label_w
+        track_w = w - label_w - 60
+        rh = 42
+        for i, it in enumerate(items):
+            it = it if isinstance(it, dict) else {"label": str(it), "value": 0}
+            ry = y + i * rh
+            accent = accent_for(pal, i, it)
+            v = max(0, min(100, float(it.get("value", 0))))
+            els.append(txt(it.get("label", ""), x, ry, label_w - 10, rh - 8, 13, pal["ink"], valign="middle", font=pal["font"]))
+            els.append(rect(track_x, ry + rh / 2 - 6, track_w, 12, pal["panel"], shape="roundRect"))
+            els.append(rect(track_x, ry + rh / 2 - 6, max(6, int(track_w * v / 100)), 12, accent, shape="roundRect"))
+            els.append(txt(f"{int(v)}%", track_x + track_w + 10, ry, 50, rh - 8, 13, accent, bold=True, valign="middle", font=pal["font"]))
+    elif t == "pricing":
+        plans = node.get("plans", node.get("items", []))
+        n = max(1, len(plans))
+        gap = 16
+        pw = (w - gap * (n - 1)) / n
+        for i, p in enumerate(plans):
+            p = p if isinstance(p, dict) else {"name": str(p)}
+            px = x + i * (pw + gap)
+            featured = p.get("featured")
+            accent = pal["primary"] if not featured else pal["alert"]
+            els.append(card(int(px), y, int(pw), h, "#FFFFFF", outline=({"color": accent, "width": 2} if featured else None)))
+            els.append(rect(int(px), y, int(pw), 70, accent, shape="roundRect"))
+            els.append(txt(p.get("name", ""), int(px), y + 10, int(pw), 26, 16, "#FFFFFF", bold=True, align="center", font=pal["font"]))
+            price = p.get("price", "")
+            if p.get("period"):
+                price = f"{price}"
+            els.append(txt(str(price), int(px), y + 34, int(pw), 30, 22, "#FFFFFF", bold=True, align="center", font=pal["font"]))
+            iy = y + 86
+            for it in p.get("items", [])[:6]:
+                els.append(txt("✓", int(px) + 16, iy, 18, 24, 13, accent, bold=True, valign="middle", font=pal["font"]))
+                els.append(txt(str(it), int(px) + 38, iy, int(pw) - 50, 24, 12.5, pal["ink"], valign="middle", font=pal["font"]))
+                iy += 30
+    elif t == "milestone":
+        items = node.get("items", [])
+        n = max(1, len(items))
+        ly = y + h / 2
+        els.append(rect(x, int(ly) - 2, w, 4, pal["primary"], shape="roundRect"))
+        step = w / n
+        for i, it in enumerate(items):
+            it = it if isinstance(it, dict) else {"title": str(it)}
+            cx = x + step * i + step / 2
+            accent = accent_for(pal, i, it)
+            above = i % 2 == 0
+            cardh = (h / 2) - 28
+            cy0 = (ly - 14 - cardh) if above else (ly + 14)
+            cw = step - 18
+            els.append(rect(int(cx) - 7, int(ly) - 7, 14, 14, accent, shape="ellipse"))
+            els.append(rect(int(cx) - 1, int(cy0 + cardh) if above else int(ly), 2, 14, pal["line"]))
+            els.append(card(int(cx - cw / 2), int(cy0), int(cw), int(cardh), pal["light"]))
+            els.append(rect(int(cx - cw / 2), int(cy0), int(cw), 4, accent))
+            if it.get("date"):
+                els.append(txt(it["date"], int(cx - cw / 2) + 12, int(cy0) + 10, int(cw) - 24, 22, 13, accent, bold=True, font=pal["font"]))
+            els.append(txt(it.get("title", ""), int(cx - cw / 2) + 12, int(cy0) + 32, int(cw) - 24, 24, 13, pal["ink"], bold=True, font=pal["font"]))
+            if it.get("body"):
+                els.append(txt(it["body"], int(cx - cw / 2) + 12, int(cy0) + 56, int(cw) - 24, int(cardh) - 64, 11, pal["muted"], font=pal["font"]))
+    elif t == "orgchart":
+        root = node.get("root", {})
+        children = node.get("children", [])
+        m = max(1, len(children))
+        rw, rh0 = 200, 50
+        rx = x + (w - rw) / 2
+        els.append(rect(int(rx), y, rw, rh0, pal["primary"], shape="roundRect", shadow=True))
+        els.append(txt(root.get("title", "") if isinstance(root, dict) else str(root), int(rx), y, rw, rh0, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        gap = 16
+        cw = (w - gap * (m - 1)) / m
+        ch0 = 56
+        cy0 = y + rh0 + 46
+        bus_y = y + rh0 + 22
+        els.append(rect(int(x + w / 2) - 1, y + rh0, 2, 22, pal["line"]))
+        if m > 1:
+            els.append(rect(int(x + cw / 2), bus_y, int((m - 1) * (cw + gap)), 2, pal["line"]))
+        for i, c in enumerate(children):
+            c = c if isinstance(c, dict) else {"title": str(c)}
+            cx = x + i * (cw + gap)
+            cxc = cx + cw / 2
+            accent = accent_for(pal, i, c)
+            els.append(rect(int(cxc) - 1, bus_y, 2, cy0 - bus_y, pal["line"]))
+            els.append(card(int(cx), int(cy0), int(cw), ch0, pal["light"]))
+            els.append(rect(int(cx), int(cy0), 5, ch0, accent, shape="roundRect"))
+            els.append(txt(c.get("title", ""), int(cx) + 14, int(cy0), int(cw) - 20, ch0, 14, pal["ink"], bold=True, valign="middle", font=pal["font"]))
+            subs = c.get("items", [])
+            for k, s in enumerate(subs[:3]):
+                sy = cy0 + ch0 + 12 + k * 26
+                els.append(rect(int(cx) + 14, sy + 7, 6, 6, accent, shape="ellipse"))
+                els.append(txt(str(s), int(cx) + 28, sy, int(cw) - 36, 24, 12, pal["muted"], valign="middle", font=pal["font"]))
     # spacer: nothing
 
 

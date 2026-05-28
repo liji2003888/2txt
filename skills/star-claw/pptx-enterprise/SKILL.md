@@ -25,7 +25,8 @@ Components:
 - text/containers: `text` (`text`/`size`/`bold`/`align`), `bullets` (`items`), `spacer`
 - cards & panels: `card` (`title`/`body`/`icon`/`metric`/`tag`/`tone:light|blue|navy`/`accent`), `panel` (`title`/`tone`/`items:[...]`), `iconitem` (`icon`/`title`/`body`), `imagecard` (`src`/`title`/`body`), `personcard` (`avatar`/`name`/`role`/`quote`), `quote` (`text`/`author`/`tone`)
 - numbers & emphasis: `stat` (`value`/`label`/`note`), `hero` (`kicker`/`value`/`label`)
-- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`)
+- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `milestone` (里程碑, alternating cards, `items:[{date,title,body}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`), `orgchart` (组织架构, `root`/`children:[{title,items}]`)
+- progress & compare: `progresslist` (进度条, `items:[{label,value}]`), `pricing` (方案对比, `plans:[{name,price,items,featured}]`)
 - charts: `chart` (`chartType`: column/bar/line/area/pie/donut/radar; `labels`/`series`), `gauge` (进度环, `value`/`label`), `image` (`src`)
 
 Any item takes `"accent":"red"` (or `"black"`/hex) to mark a key node; icons always render white on chips.
@@ -43,10 +44,10 @@ Choose by input:
 
 ### Two ways to render a generated deck to .pptx
 
-**Prefer `schema_to_pptx.js` (PptxGenJS) for fully-editable output** — every shape/text/table is a native editable PowerPoint object, charts are embedded images. This is the default path. Use `schema_to_pptx_tpl.py` (master) only when pixel-perfect master chrome matters more than editability.
+**RULE: default to `schema_to_pptx.js` (PptxGenJS).** Generate with PptxGenJS unless the user explicitly asks for the master path — every shape/text/table is a native editable PowerPoint object (charts/icons are embedded images), works for any theme, and draws the full brand chrome itself.
 
-- **`schema_to_pptx.js` (PptxGenJS, DEFAULT)** — draws everything from primitives, including the brand chrome (corner badge, logo, red top title + divider) and the cover background image. No template needed; works for any theme; output is fully editable.
-- **`schema_to_pptx_tpl.py` (python-pptx, THE path for TCL)** — renders the body onto slides created from the real **master template's layouts**, so the corner badge, olympic logo, slide number and cover background come **pixel-perfect from the master** (not redrawn), and the title sits where the template puts it (top). The theme sets `baseTemplate` + layout names (`tcl_feishu` → `assets/csot_master.pptx`). Each deck slide carries a `role` (cover/content/full) that selects the master layout (`空白` / `标题幻灯片`). Elements tagged `role:"chrome"`/`"coverbg"`/`"headerline"` are skipped because the master provides them. Charts work here too — `outline_to_schema` pre-renders every chart to a PNG (via `chart_img.js`) and embeds it as an image, so no native-chart limitation.
+- **`node scripts/schema_to_pptx.js deck.json out.pptx` (PptxGenJS — DEFAULT)** — draws everything from primitives, including the brand chrome (corner badge, logo, dark title + divider) and the cover background image. No template needed; output is fully editable. **Use this by default.**
+- **`python scripts/schema_to_pptx_tpl.py deck.json out.pptx` (python-pptx, master — opt-in)** — only when the user wants pixel-perfect master chrome. Renders the body onto slides created from the master template's layouts; corner badge / logo / slide number / cover background come from the master. Theme sets `baseTemplate` + layout names. Elements tagged `role:"chrome"`/`"coverbg"`/`"headerline"` are skipped (master provides them). Charts are pre-rendered to PNG so they embed here too.
 
 To add or update the master: strip example slides from a branded `.pptx` (keep masters/layouts) and point `baseTemplate` at it; set `contentLayout`/`coverLayout` to the layout names (see `python scripts/dump_pptx.py` / list via python-pptx `slide_layouts`).
 
