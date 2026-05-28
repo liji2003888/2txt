@@ -59,6 +59,14 @@ def measure(node, pal, w):
         return _text_h(node.get("text", ""), w, node.get("size", 16)) + 6
     if t in ("chart", "image"):
         return node.get("h", 240)
+    if t == "hero":
+        return 80 + (28 if node.get("kicker") else 0) + (24 if node.get("label") else 0)
+    if t == "quote":
+        return PAD * 2 + _text_h(node.get("text", ""), w - 2 * PAD - 48, 22) + (26 if node.get("author") else 0) + 12
+    if t == "timeline":
+        return 132
+    if t in ("arrowflow", "steps"):
+        return 100
     if t == "spacer":
         return node.get("h", 20)
     return 40
@@ -208,6 +216,56 @@ def _component(node, pal, x, y, w, h, els):
     elif t == "image":
         els.append({"id": new_id(), "type": "image", "left": x, "top": y, "width": w, "height": h,
                     "src": node.get("src", ""), "fixedRatio": node.get("fixedRatio", True)})
+    elif t == "hero":
+        accent = accent_for(pal, node.get("_i", 0), node)
+        cy = y
+        if node.get("kicker"):
+            els.append(txt(node["kicker"], x, cy, w, 24, 14, pal["muted"], bold=True, align=node.get("align", "left"), font=pal["font"]))
+            cy += 28
+        els.append(txt(str(node.get("value", "")), x, cy, w, 72, node.get("size", 60), accent, bold=True, align=node.get("align", "left"), valign="middle", font=pal["font"]))
+        cy += 76
+        if node.get("label"):
+            els.append(txt(node["label"], x, cy, w, 24, 15, pal["ink"], align=node.get("align", "left"), font=pal["font"]))
+    elif t == "quote":
+        tone = node.get("tone", "light")
+        dark = tone in ("blue", "navy")
+        fill = _tone_fill(tone, pal)
+        accent = accent_for(pal, node.get("_i", 0), node)
+        els.append(card(x, y, w, h, fill))
+        els.append(txt("“", x + PAD, y + 2, 44, 50, 52, (accent if not dark else "#FFFFFF"), bold=True, font=pal["font"]))
+        ink = "#FFFFFF" if dark else pal["ink"]
+        els.append(txt(node.get("text", ""), x + PAD + 44, y + PAD, w - 2 * PAD - 52, h - 2 * PAD - (24 if node.get("author") else 0), 18, ink, italic=True, valign="middle", font=pal["font"]))
+        if node.get("author"):
+            els.append(txt("— " + node["author"], x + PAD + 44, y + h - PAD - 22, w - 2 * PAD - 52, 22, 13, (pal["muted"] if not dark else "#C8D2DF"), align="right", font=pal["font"]))
+    elif t == "timeline":
+        items = node.get("items", [])
+        n = max(1, len(items))
+        ly = y + h / 2
+        els.append(rect(x, int(ly) - 1, w, 3, pal["line"]))
+        step = w / n
+        for i, it in enumerate(items):
+            it = it if isinstance(it, dict) else {"title": str(it)}
+            cx = x + step * i + step / 2
+            accent = accent_for(pal, i, it)
+            if it.get("date"):
+                els.append(txt(it["date"], int(cx - step / 2) + 6, int(ly) - 52, int(step) - 12, 24, 14, accent, bold=True, align="center", font=pal["font"]))
+            els.append(rect(int(cx) - 9, int(ly) - 9, 18, 18, accent, shape="ellipse"))
+            els.append(txt(it.get("title", ""), int(cx - step / 2) + 6, int(ly) + 16, int(step) - 12, 40, 13, pal["ink"], bold=True, align="center", font=pal["font"]))
+    elif t in ("arrowflow", "steps"):
+        items = node.get("items", [])
+        n = max(1, len(items))
+        arrow = 26
+        nw = (w - arrow * (n - 1)) / n
+        for i, it in enumerate(items):
+            it = it if isinstance(it, dict) else {"title": str(it)}
+            nx = x + i * (nw + arrow)
+            accent = accent_for(pal, i, it)
+            els.append(rect(int(nx), y, int(nw), h, accent, shape="roundRect"))
+            els.append(txt(it.get("title", ""), int(nx) + 12, y + (10 if it.get("sub") else 0), int(nw) - 24, h - (28 if it.get("sub") else 0), 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+            if it.get("sub"):
+                els.append(txt(it["sub"], int(nx) + 12, y + h - 30, int(nw) - 24, 24, 11, "#DCE8F7", align="center", font=pal["font"]))
+            if i < n - 1:
+                els.append(txt("➜", int(nx + nw), y, arrow, h, 18, pal["muted"], bold=True, align="center", valign="middle", font=pal["font"]))
     # spacer: nothing
 
 

@@ -33,8 +33,14 @@ function buildSvg(set, name, color) {
   if (set === 'lucide') {
     root = `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
   } else {
-    body = body.split('currentColor').join(color);
-    root = 'fill="none"';
+    // Force monochrome in the target color so NO icon ever renders black:
+    // recolor currentColor + every hardcoded fill/stroke hex (e.g. icon-park multicolor's #333/#000),
+    // while preserving fill="none"/stroke="none".
+    body = body
+      .split('currentColor').join(color)
+      .replace(/(fill|stroke)="#[0-9a-fA-F]{3,8}"/g, `$1="${color}"`)
+      .replace(/(fill|stroke):\s*#[0-9a-fA-F]{3,8}/g, `$1:${color}`);
+    root = `fill="${color}" stroke="${color}"`;
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${left} ${top} ${w} ${h}" ${root}>${body}</svg>`;
 }
