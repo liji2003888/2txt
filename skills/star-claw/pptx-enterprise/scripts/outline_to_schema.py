@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer
+from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, logo_elements
 
 CANVAS_W, CANVAS_H = 960, 540
 
@@ -21,6 +21,8 @@ def build(outline: dict, theme: dict) -> dict:
         fn = LAYOUTS.get(layout, LAYOUTS["bullets"])
         slide = fn(spec, pal)
         slide.setdefault("background", {"type": "solid", "color": pal["bg"]})
+        if slide["background"].get("color") == pal["bg"] and spec.get("logo", True):
+            slide["elements"].extend(logo_elements(theme))
         if layout in CONTENT_LAYOUTS:
             page += 1
             slide["elements"].extend(footer(pal, page))

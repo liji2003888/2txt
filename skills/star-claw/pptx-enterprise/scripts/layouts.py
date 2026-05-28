@@ -2,6 +2,9 @@
 """Designed slide layouts: compose shapes + text + accents into professional slides (not bullet dumps)."""
 import html as _html
 import uuid
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parent.parent
 
 W, H = 960, 540
 MARGIN = 60
@@ -74,9 +77,26 @@ def _slide(elements, background=None, remark=None):
 def header(title, pal):
     return [
         rect(MARGIN, 54, 8, 36, pal["primary"]),
-        txt(title, MARGIN + 20, 50, 800, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]),
+        txt(title, MARGIN + 20, 50, 700, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]),
         hline(MARGIN, 104, W - 2 * MARGIN, pal["line"], 1),
     ]
+
+
+def logo_elements(theme: dict):
+    raw = theme.get("logo")
+    if not raw:
+        return []
+    p = Path(raw)
+    if not p.is_absolute():
+        p = _ROOT / p
+    if not p.exists():
+        return []
+    w = theme.get("logoWidth", 140)
+    h = theme.get("logoHeight", round(w * 489 / 1928))
+    return [{
+        "id": new_id(), "type": "image", "src": str(p),
+        "left": W - w - 24, "top": 18, "width": w, "height": h, "fixedRatio": True,
+    }]
 
 
 def footer(pal, page):
@@ -203,16 +223,17 @@ def kpi_layout(spec, pal):
     els = header(spec.get("title", ""), pal)
     stats = spec.get("stats", [])
     n = max(1, len(stats))
-    area_w = W - 2 * MARGIN
-    cw = area_w / n
-    cy = 200
+    cw = (W - 2 * MARGIN) / n
+    cy = 186
     for i, st in enumerate(stats):
         x = MARGIN + i * cw
         color = pal["accents"][i % len(pal["accents"])]
         if i > 0:
-            els.append(vline(int(x), cy, 120, pal["line"], 1))
-        els.append(txt(st.get("value", ""), int(x), cy, int(cw), 80, 52, color, bold=True, align="center", valign="middle", font=pal["font"]))
-        els.append(txt(st.get("label", ""), int(x), cy + 90, int(cw), 40, 15, pal["muted"], align="center", font=pal["font"]))
+            els.append(vline(int(x), cy, 150, pal["line"], 1))
+        els.append(txt(st.get("value", ""), int(x), cy, int(cw), 78, 52, color, bold=True, align="center", valign="middle", font=pal["font"]))
+        els.append(txt(st.get("label", ""), int(x), cy + 86, int(cw), 30, 15, pal["ink"], bold=True, align="center", font=pal["font"]))
+        if st.get("note"):
+            els.append(txt(st["note"], int(x) + 16, cy + 120, int(cw) - 32, 50, 12, pal["muted"], align="center", font=pal["font"]))
     return _slide(els, remark=spec.get("notes"))
 
 
@@ -280,7 +301,7 @@ def process_layout(spec, pal):
         els.append(txt(st.get("title", ""), int(x), cy + 70, int(sw), 28, 16, pal["ink"], bold=True, align="center", font=pal["font"]))
         els.append(txt(st.get("body", ""), int(x), cy + 100, int(sw), 80, 12, pal["muted"], align="center", font=pal["font"]))
         if i < n - 1:
-            els.append(rect(int(x + sw + 2), cy + 24, int(gap - 4), 8, pal["line"]))
+            els.append(txt("→", int(x + sw - 6), cy + 8, int(gap + 12), 40, 22, pal["muted"], bold=True, align="center", valign="middle", font=pal["font"]))
     return _slide(els, remark=spec.get("notes"))
 
 

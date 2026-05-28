@@ -16,6 +16,18 @@ const theme = (deck.meta && deck.meta.theme) || {};
 const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+const toDataUri = (src) => {
+  if (!src || /^(https?:|data:)/.test(src)) return src;
+  try {
+    const buf = fs.readFileSync(src);
+    const ext = (src.split('.').pop() || 'png').toLowerCase();
+    const mime = ext === 'svg' ? 'image/svg+xml' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`;
+    return `data:${mime};base64,${buf.toString('base64')}`;
+  } catch {
+    return src;
+  }
+};
+
 const renderEl = (el) => {
   const style =
     `position:absolute;left:${el.left}px;top:${el.top}px;width:${el.width}px;height:${el.height}px;` +
@@ -25,7 +37,7 @@ const renderEl = (el) => {
     return `<div style="${style}font-size:${el.fontSize || 18}px;color:${el.defaultColor || '#000'};font-family:${f};overflow:hidden;">${el.content || ''}</div>`;
   }
   if (el.type === 'image') {
-    return `<img src="${escapeHtml(el.src)}" style="${style}object-fit:contain;">`;
+    return `<img src="${escapeHtml(toDataUri(el.src))}" style="${style}object-fit:contain;">`;
   }
   if (el.type === 'shape') {
     const radius = el.shapeType === 'roundRect' ? '12px' : el.shapeType === 'ellipse' ? '50%' : '0';
