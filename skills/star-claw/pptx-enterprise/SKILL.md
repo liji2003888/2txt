@@ -78,12 +78,29 @@ The two outputs are **content-consistent, not pixel-consistent**. PowerPoint and
 Setup (run once in the skill dir):
 
 ```
+bash setup.sh
+```
+
+`setup.sh` installs system deps (LibreOffice Impress headless + poppler + Noto CJK, lean via `--no-install-recommends`), Python and Node deps, then runs the smoke test. To do it manually instead:
+
+```
+sudo apt-get install -y --no-install-recommends libreoffice-impress poppler-utils fonts-noto-cjk
 pip install -r requirements.txt
 npm install
 python scripts/smoke_test.py   # verifies runtime + generates a sample deck end to end
 ```
 
 `smoke_test.py` is the runtime guarantee: it checks each tool, runs outline → schema → .pptx, and asserts the output is a designed composition (shapes/lines/charts present), not a text dump.
+
+> Note: the core generation path (outline → schema → .pptx) needs only Python + Node. LibreOffice/poppler are required **only** for the optional visual-QA auto-render (`render_inspect.py`) and the `.pptx → HTML` fallback. If disk is tight you can skip them and QA by opening the .pptx manually.
+
+## Progress notifications (long tasks)
+
+`scripts/notify_lark.py "<message>"` posts a one-line update to a Lark/Feishu custom-bot. It is a no-op unless `LARK_WEBHOOK` is set (and optionally `LARK_SECRET` for signed bots). Use it to ping key milestones during long generations:
+
+```
+LARK_WEBHOOK=... python scripts/notify_lark.py "PPT 生成完成:11 页,已导出 deck.pptx"
+```
 
 ## License notice
 
