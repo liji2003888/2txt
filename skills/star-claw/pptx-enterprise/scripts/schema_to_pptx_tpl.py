@@ -176,7 +176,7 @@ def main():
         "full": theme.get("fullLayout", theme.get("contentLayout", "标题幻灯片")),
     }
     blank = prs.slide_layouts[6] if len(prs.slide_layouts) > 6 else prs.slide_layouts[0]
-    skip_roles = {"chrome", "coverbg"}
+    skip_roles = {"chrome", "coverbg", "headerline"}
 
     for s in deck["slides"]:
         role = s.get("role", "content")

@@ -99,9 +99,13 @@ def header(title, pal):
     els = []
     if pal.get("badge"):
         red = pal["red"]
-        els.append(txt(title, 84, 40, 760, 44, 26, red, bold=True, valign="middle", font=pal["font"]))
-        uw = min(_text_w(title, 26) + 10, 800)
-        els.append(rect(84, 92, int(uw), 5, red))
+        # Title pinned to the top to match the TCL master (title ~y14, divider ~y46).
+        els.append(txt(title, 84, 8, 760, 40, 26, red, bold=True, valign="middle", font=pal["font"]))
+        # Divider under the title; tagged headerline so the template renderer skips it
+        # (the master's '标题幻灯片' layout already draws this divider).
+        line = rect(84, 50, 165, 4, red)
+        line["role"] = "headerline"
+        els.append(line)
     else:
         els.append(rect(MARGIN, 54, 8, 36, pal["primary"]))
         els.append(txt(title, MARGIN + 20, 50, 700, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]))
