@@ -31,6 +31,10 @@ Layouts adapt to content: item/column/step/card/level counts drive spacing and s
 
 The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. **When omitted, the default is `assets/themes/tcl_feishu.json`** — so all generations share one content palette unless explicitly overridden. Also ships `assets/tcl_branding.json` (red) and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` (dark themes like `midnight` recolor backgrounds), and brand chrome: `logo` (right-corner image) + `badgeColor` (left-corner badge). When both are set, every light-background slide carries the same left + right corner badges, matching the TCL reference decks. Author new themes by copying one of these.
 
+#### Icons
+
+Slot-based layouts (`cards`, `process`, `hierarchy`, `circles`, `matrix`) take an optional `icon` per item, e.g. `"icon": "lucide/search"` or `"icon": "icon-park/people"`. Sets: `lucide` (~1.7k line), `icon-park-outline` (~2.6k line), `icon-park` (~2.6k multicolor). `outline_to_schema` recolors monochrome icons (white inside the colored slot), rasterizes to PNG via `scripts/icon.js` (`@resvg/resvg-js`), caches under `assets/.icon_cache/`, and embeds them. An unknown icon name is dropped gracefully (slot falls back to its number/tag). All three sets are commercial-safe (ISC/Apache-2.0). Browse names on iconify.design. Requires `@iconify-json/*` + `@resvg/resvg-js` (pulled by `npm install`).
+
 #### Design rules — DO NOT produce text dumps
 
 - A slide is a **composition**, never a title + one `<ul>`. Every content slide carries an accent header bar, a divider, and colored markers/cards/panels.

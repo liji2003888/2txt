@@ -20,20 +20,20 @@
       "layout": "process",
       "title": "智能伙伴小黑 · 一条回复背后的五步",
       "steps": [
-        {"title": "感知接收", "body": "探测飞书消息 / 邮件 / 会议纪要 / 日报 / AI 资讯"},
-        {"title": "智能识别", "body": "异常识别 + 语义提取(系统 / 环境 / 责任人)"},
-        {"title": "响应登记", "body": "即时回复 + 自动写入协作台(任务 / 风险 / 责任)"},
-        {"title": "提醒推进", "body": "任务推送 + 到期督办,跟踪闭环"},
-        {"title": "沉淀复盘", "body": "纳入运维日报,周维度反哺改进"}
+        {"icon": "lucide/radar", "title": "感知接收", "body": "探测飞书消息 / 邮件 / 会议纪要 / 日报 / AI 资讯"},
+        {"icon": "lucide/brain", "title": "智能识别", "body": "异常识别 + 语义提取(系统 / 环境 / 责任人)"},
+        {"icon": "lucide/clipboard-check", "title": "响应登记", "body": "即时回复 + 自动写入协作台(任务 / 风险 / 责任)"},
+        {"icon": "lucide/bell-ring", "title": "提醒推进", "body": "任务推送 + 到期督办,跟踪闭环"},
+        {"icon": "lucide/archive", "title": "沉淀复盘", "body": "纳入运维日报,周维度反哺改进"}
       ]
     },
     {
       "layout": "matrix",
       "title": "小黑能力矩阵 · 个人 × 团队 × AI 支撑",
       "columns": [
-        {"header": "个人工作台", "items": ["消息承接", "事项跟进", "方案 / 邮件", "会前 / 会后", "异常提醒", "决策支持"]},
-        {"header": "团队协作台", "items": ["任务分派", "项目管理", "群消息承接", "日报 / 周报", "风险预警", "协作驾驶舱"]},
-        {"header": "全链路 AI 支撑", "items": ["感知接收", "智能识别", "响应登记", "提醒推进", "沉淀复盘", "反馈学习"]}
+        {"icon": "lucide/user", "header": "个人工作台", "items": ["消息承接", "事项跟进", "方案 / 邮件", "会前 / 会后", "异常提醒", "决策支持"]},
+        {"icon": "lucide/users", "header": "团队协作台", "items": ["任务分派", "项目管理", "群消息承接", "日报 / 周报", "风险预警", "协作驾驶舱"]},
+        {"icon": "lucide/sparkles", "header": "全链路 AI 支撑", "items": ["感知接收", "智能识别", "响应登记", "提醒推进", "沉淀复盘", "反馈学习"]}
       ]
     },
     {
@@ -41,10 +41,10 @@
       "title": "一个需求进来 · 整支小分队接手",
       "root": "小黑 Lead 评审把关",
       "cards": [
-        {"tag": "1", "title": "需求", "body": "理解需求 · 输出方案 · 定义验收"},
-        {"tag": "2", "title": "架构", "body": "技术选型 · 架构设计 · 接口定义"},
-        {"tag": "3", "title": "开发", "body": "代码实现 · 单元测试 · 自检"},
-        {"tag": "4", "title": "测试", "body": "用例生成 · 集成测试 · 缺陷反馈"}
+        {"icon": "lucide/clipboard-list", "title": "需求", "body": "理解需求 · 输出方案 · 定义验收"},
+        {"icon": "lucide/layout-dashboard", "title": "架构", "body": "技术选型 · 架构设计 · 接口定义"},
+        {"icon": "lucide/code", "title": "开发", "body": "代码实现 · 单元测试 · 自检"},
+        {"icon": "lucide/flask-conical", "title": "测试", "body": "用例生成 · 集成测试 · 缺陷反馈"}
       ]
     },
     {
@@ -57,18 +57,18 @@
       "layout": "cards",
       "title": "行动建议 · 培养你自己的智能伙伴",
       "cards": [
-        {"tag": "①", "title": "FIND 找痛点", "body": "每天最烦你的事:重复工作、多系统查信息、反复回复"},
-        {"tag": "②", "title": "BUILD 造分身", "body": "定义 AI 人格:他是谁、做什么,试跑 → 调试 → 上线"},
-        {"tag": "③", "title": "GROW 养起来", "body": "长期记忆、持续微调、7×24 在状态,越用越懂你"}
+        {"icon": "lucide/search", "title": "FIND 找痛点", "body": "每天最烦你的事:重复工作、多系统查信息、反复回复"},
+        {"icon": "lucide/hammer", "title": "BUILD 造分身", "body": "定义 AI 人格:他是谁、做什么,试跑 → 调试 → 上线"},
+        {"icon": "lucide/sprout", "title": "GROW 养起来", "body": "长期记忆、持续微调、7×24 在状态,越用越懂你"}
       ]
     },
     {
       "layout": "circles",
       "title": "小黑 = 三位一体",
       "items": [
-        {"tag": "个人", "title": "个人工作台", "body": "聚焦个人判断 · 个人节奏 · 决策支持"},
-        {"tag": "团队", "title": "团队协作台", "body": "聚焦团队协同 · 项目推进 · 管理可视化"},
-        {"tag": "AI", "title": "全链路 AI 支撑", "body": "为两个工作台提供底层能力"}
+        {"icon": "lucide/user", "title": "个人工作台", "body": "聚焦个人判断 · 个人节奏 · 决策支持"},
+        {"icon": "lucide/users", "title": "团队协作台", "body": "聚焦团队协同 · 项目推进 · 管理可视化"},
+        {"icon": "lucide/cpu", "title": "全链路 AI 支撑", "body": "为两个工作台提供底层能力"}
       ]
     },
     {

@@ -103,6 +103,14 @@ def logo_elements(theme: dict):
     }]
 
 
+def icon_img(ref, color, left, top, w, h):
+    # ref like "lucide/calendar" or "icon-park/people"; resolved to a recolored PNG by outline_to_schema.
+    return {
+        "id": new_id(), "type": "image", "src": f"icon:{ref}", "iconColor": color,
+        "left": int(left), "top": int(top), "width": int(w), "height": int(h), "fixedRatio": True,
+    }
+
+
 def chrome_elements(theme: dict):
     # Persistent brand chrome: left red corner badge + right logo, on every light slide.
     els = []
@@ -227,7 +235,10 @@ def cards_layout(spec, pal):
         els.append(rect(int(x), int(y), int(cw), int(chh), pal["light"], shape="roundRect"))
         els.append(rect(int(x), int(y), int(cw), 6, color, shape="roundRect"))
         els.append(rect(int(x) + 22, int(y) + 24, 34, 34, color, shape="roundRect"))
-        els.append(txt(card.get("tag", str(i + 1)), int(x) + 22, int(y) + 24, 34, 34, 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if card.get("icon"):
+            els.append(icon_img(card["icon"], "#FFFFFF", int(x) + 28, int(y) + 30, 22, 22))
+        else:
+            els.append(txt(card.get("tag", str(i + 1)), int(x) + 22, int(y) + 24, 34, 34, 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         els.append(txt(card.get("title", ""), int(x) + 22, int(y) + 70, int(cw) - 44, 28, 17, pal["ink"], bold=True, font=pal["font"]))
         els.append(txt(card.get("body", ""), int(x) + 22, int(y) + 102, int(cw) - 44, int(chh) - 120, 13, pal["muted"], font=pal["font"]))
     return _slide(els, remark=spec.get("notes"))
@@ -311,7 +322,10 @@ def process_layout(spec, pal):
         x = MARGIN + i * (sw + gap)
         color = pal["accents"][i % len(pal["accents"])]
         els.append(rect(int(x + sw / 2 - 28), cy, 56, 56, color, shape="ellipse"))
-        els.append(txt(str(i + 1), int(x + sw / 2 - 28), cy, 56, 56, 24, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if st.get("icon"):
+            els.append(icon_img(st["icon"], "#FFFFFF", int(x + sw / 2 - 15), cy + 13, 30, 30))
+        else:
+            els.append(txt(str(i + 1), int(x + sw / 2 - 28), cy, 56, 56, 24, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         els.append(txt(st.get("title", ""), int(x), cy + 70, int(sw), 28, 16, pal["ink"], bold=True, align="center", font=pal["font"]))
         els.append(txt(st.get("body", ""), int(x), cy + 100, int(sw), 80, 12, pal["muted"], align="center", font=pal["font"]))
         if i < n - 1:
@@ -391,6 +405,8 @@ def matrix_layout(spec, pal):
         x = MARGIN + i * (cw + gap)
         color = pal["accents"][i % len(pal["accents"])]
         els.append(rect(int(x), top, int(cw), hh, color, shape="roundRect"))
+        if c.get("icon"):
+            els.append(icon_img(c["icon"], "#FFFFFF", int(x) + 14, top + (hh - 20) // 2, 20, 20))
         els.append(txt(c.get("header", ""), int(x), top, int(cw), hh, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         els.append(rect(int(x), body_top, int(cw), int(body_h), pal["light"], shape="roundRect"))
         items = (c.get("items") or [])[:6]
@@ -426,7 +442,10 @@ def hierarchy_layout(spec, pal):
         els.append(rect(int(x), cy, int(cw), 40, color, shape="roundRect"))
         els.append(txt(c.get("title", ""), int(x), cy, int(cw), 40, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         els.append(rect(int(cxp - 22), cy + 54, 44, 44, color, shape="ellipse"))
-        els.append(txt(c.get("tag", str(i + 1)), int(cxp - 22), cy + 54, 44, 44, 18, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if c.get("icon"):
+            els.append(icon_img(c["icon"], "#FFFFFF", int(cxp - 12), cy + 64, 24, 24))
+        else:
+            els.append(txt(c.get("tag", str(i + 1)), int(cxp - 22), cy + 54, 44, 44, 18, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         els.append(txt(c.get("body", ""), int(x) + 16, cy + 106, int(cw) - 32, ch - 116, 12, pal["muted"], align="center", font=pal["font"]))
     return _slide(els, remark=spec.get("notes"))
 
@@ -441,7 +460,10 @@ def circles_layout(spec, pal):
         cx, cy = centers[i]
         color = pal["accents"][i % len(pal["accents"])]
         els.append(rect(int(cx - d / 2), int(cy - d / 2), d, d, color, shape="ellipse"))
-        els.append(txt(it.get("tag", f"{i + 1:02d}"), int(cx - d / 2), int(cy - d / 2), d, d, 26, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if it.get("icon"):
+            els.append(icon_img(it["icon"], "#FFFFFF", int(cx - 32), int(cy - 32), 64, 64))
+        else:
+            els.append(txt(it.get("tag", f"{i + 1:02d}"), int(cx - d / 2), int(cy - d / 2), d, d, 26, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         tx, ty, tw, al = texts[i]
         els.append(txt(it.get("title", ""), tx, ty, tw, 28, 17, color, bold=True, align=al, font=pal["font"]))
         els.append(txt(it.get("body", ""), tx, ty + 30, tw, 110, 13, pal["muted"], align=al, font=pal["font"]))

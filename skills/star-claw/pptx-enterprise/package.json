@@ -7,6 +7,10 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@iconify-json/icon-park": "^1.2.4",
+    "@iconify-json/icon-park-outline": "^1.2.4",
+    "@iconify-json/lucide": "^1.2.110",
+    "@resvg/resvg-js": "^2.6.2",
     "pptxgenjs": "^3.12.0",
     "pptxtojson": "^1.0.0"
   },
