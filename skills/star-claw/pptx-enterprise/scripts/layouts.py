@@ -431,6 +431,48 @@ def hierarchy_layout(spec, pal):
     return _slide(els, remark=spec.get("notes"))
 
 
+def circles_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    items = (spec.get("items") or [])[:3]
+    d = 170
+    centers = [(480, 208), (408, 332), (552, 332)]
+    texts = [(60, 156, 312, "right"), (44, 366, 286, "right"), (636, 332, 286, "left")]
+    for i, it in enumerate(items):
+        cx, cy = centers[i]
+        color = pal["accents"][i % len(pal["accents"])]
+        els.append(rect(int(cx - d / 2), int(cy - d / 2), d, d, color, shape="ellipse"))
+        els.append(txt(it.get("tag", f"{i + 1:02d}"), int(cx - d / 2), int(cy - d / 2), d, d, 26, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        tx, ty, tw, al = texts[i]
+        els.append(txt(it.get("title", ""), tx, ty, tw, 28, 17, color, bold=True, align=al, font=pal["font"]))
+        els.append(txt(it.get("body", ""), tx, ty + 30, tw, 110, 13, pal["muted"], align=al, font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def pyramid_layout(spec, pal):
+    els = header(spec.get("title", ""), pal)
+    levels = spec.get("levels", [])
+    n = max(1, len(levels))
+    top, gap = 132, 12
+    band_h = min(72, (470 - top - (n - 1) * gap) / n)
+    maxw, minw = W - 2 * MARGIN, (W - 2 * MARGIN) * 0.42
+    inverted = spec.get("inverted", False)
+    for i, lv in enumerate(levels):
+        frac = i / (n - 1) if n > 1 else 1
+        if inverted:
+            frac = 1 - frac
+        w = minw + (maxw - minw) * frac
+        x = (W - w) / 2
+        y = top + i * (band_h + gap)
+        color = pal["accents"][i % len(pal["accents"])]
+        label = lv.get("label", "") if isinstance(lv, dict) else str(lv)
+        note = lv.get("note", "") if isinstance(lv, dict) else ""
+        els.append(rect(int(x), int(y), int(w), int(band_h), color, shape="roundRect"))
+        els.append(txt(label, int(x), int(y), int(w), int(band_h), 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if note:
+            els.append(txt(note, int(x), int(y + band_h + 1), int(w), 16, 11, pal["muted"], align="center", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
 LAYOUTS = {
     "title": title_layout,
     "section": section_layout,
@@ -445,6 +487,8 @@ LAYOUTS = {
     "timeline": timeline_layout,
     "matrix": matrix_layout,
     "hierarchy": hierarchy_layout,
+    "circles": circles_layout,
+    "pyramid": pyramid_layout,
     "statement": statement_layout,
     "table": table_layout,
     "image_text": image_text_layout,
@@ -453,6 +497,6 @@ LAYOUTS = {
 }
 
 CONTENT_LAYOUTS = {
-    "bullets", "agenda", "two_column", "cards", "kpi", "chart",
-    "comparison", "process", "timeline", "matrix", "hierarchy", "table", "image_text",
+    "bullets", "agenda", "two_column", "cards", "kpi", "chart", "comparison",
+    "process", "timeline", "matrix", "hierarchy", "circles", "pyramid", "table", "image_text",
 }

@@ -23,7 +23,9 @@ For one-off, highly custom slides you may emit `deck.json` directly per `schema/
 
 #### Layout catalog (`layouts.py`)
 
-`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `matrix` (capability matrix: N category columns × item lists), `hierarchy` (root box + connected tier cards), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `matrix` (capability matrix: N category columns × item lists), `hierarchy` (root box + connected tier cards), `circles` (3 overlapping concept circles + side copy), `pyramid` (stacked levels, `inverted` for funnel), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+
+Layouts adapt to content: item/column/step/card/level counts drive spacing and sizing, and accent colors rotate. They are **starting points, not rigid templates** — see the flexibility rule below.
 
 #### Themes
 
@@ -36,6 +38,13 @@ The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. **When omitted, 
 - Keep ≤ 6 items per slide; split dense content across `two_column` or `cards`.
 - Drive all color from `assets/tcl_branding.json` `themeColors`; never hardcode.
 - Run `scripts/render_inspect.py` and read the PNGs to confirm it looks designed, not listed.
+
+#### Don't over-template (keep layouts flexible)
+
+- Layouts are composable starting points, not a fixed mold. **Vary them** — don't reuse the same layout on consecutive slides, and don't force every deck through the same sequence.
+- Adjust the content density to fit (2–6 items), and pick the layout that matches the *shape* of the content (steps→`process`, levels→`pyramid`, categories→`matrix`, concepts→`circles`).
+- For a slide that no layout fits, **compose elements directly** in `deck.json` per `schema/slide_schema.json` (shapes/text/lines/images with explicit positions). Mixing hand-composed slides with layout-generated ones is expected and encouraged.
+- Per-slide overrides are allowed: e.g. `color` on `section`/`quote`/`closing`, `inverted` on `pyramid`, `imageSide` on `image_text`, `chrome: false` to drop corner badges on a specific slide.
 
 ### 2. Fill enterprise template (.potx with placeholders) — brand-fidelity path
 
