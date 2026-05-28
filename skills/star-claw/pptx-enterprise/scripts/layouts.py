@@ -30,7 +30,17 @@ def palette(theme: dict) -> dict:
         "badge": bool(theme.get("badgeColor")),
         "red": theme.get("badgeColor") or "#E60012",
         "cover": theme.get("coverImage"),
+        "coverDeco": theme.get("coverDeco"),
     }
+
+
+def _asset(path):
+    if not path:
+        return None
+    p = Path(path)
+    if not p.is_absolute():
+        p = _ROOT / p
+    return str(p) if p.exists() else None
 
 
 def _p(s: str) -> str:
@@ -509,23 +519,30 @@ def pyramid_layout(spec, pal):
 
 def cover_layout(spec, pal):
     red = pal["red"]
-    cover = pal.get("cover")
-    p = None
-    if cover:
-        pp = Path(cover)
-        if not pp.is_absolute():
-            pp = _ROOT / pp
-        if pp.exists():
-            p = str(pp)
+    p = _asset(pal.get("cover"))
     els = []
     if p:
-        # Clean cover background image; overlay only the editable fields.
+        # Clean cover background image (red shape + photo); overlay only the editable fields.
         els.append({"id": new_id(), "type": "image", "src": p, "left": 0, "top": 0, "width": W, "height": H})
-        els.append(txt(spec.get("title", "材料标题"), 48, 250, 560, 80, 40, "#FFFFFF", bold=True, font=pal["font"]))
+        deco = _asset(pal.get("coverDeco"))
+        if deco:
+            els.append({"id": new_id(), "type": "image", "src": deco, "left": 746, "top": 5, "width": 197, "height": 161, "fixedRatio": True})
+        meta = spec.get("meta")
+        if meta is None:
+            meta = [
+                "文档编号：              保存年限：    年",
+                "保密等级：□一般   ■秘密   □机密   □绝密",
+                "报告归档：□DCC   □部门内   □中心内",
+            ]
+        if isinstance(meta, str):
+            meta = [meta]
+        for i, line in enumerate(meta):
+            els.append(txt(line, 26, 16 + i * 18, 470, 18, 10, "#FFFFFF", font=pal["font"]))
+        els.append(txt(spec.get("title", "材料标题"), 28, 214, 470, 80, 32, "#FFFFFF", bold=True, font=pal["font"]))
         if spec.get("dept"):
-            els.append(txt(spec["dept"], 48, 412, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+            els.append(txt(spec["dept"], 33, 344, 440, 30, 18, "#FFFFFF", font=pal["font"]))
         if spec.get("author"):
-            els.append(txt(spec["author"], 48, 456, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+            els.append(txt(spec["author"], 33, 374, 440, 30, 18, "#FFFFFF", font=pal["font"]))
         return _slide(els)
     # Fallback (no cover image yet): approximate TCL red cover — lacks the building photo.
     els.append(rect(0, 0, 560, H, red))
