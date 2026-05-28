@@ -11,15 +11,27 @@ A Skill for enterprise PPT generation. The Slide JSON Schema (`schema/slide_sche
 
 This skill contains **no LLM calls** — every script is plain Python/Node. It works with any agent model (Qwen, DeepSeek, Claude, …); the model only needs to (1) write a small JSON outline or edit-ops file following the examples here, and (2) run the commands below. The outline parser is forgiving (missing fields default; a malformed slide falls back to a bullet slide instead of aborting), and `scripts/validate.py` reports any schema problem before rendering. Prefer copying the templates in `assets/examples/` and editing values, rather than composing JSON from scratch.
 
-## Step 0 · Research real content first (don't ship hollow slides)
+## 制作流程总纲 (Production pipeline — follow in order)
 
-A deck full of generic, made-up bullet points is worthless. **Before composing, gather real material.** In OpenClaw you have a `web_search` skill (and other research tools) — use it:
+Approach every deck like a senior solution/presentation consultant: **content logic first, layout last.** Don't open the engine until you know what each slide must say. The pipeline:
 
-1. **Research the topic** — invoke `web_search` for the subject to collect accurate facts, current data/statistics, real examples and cases, definitions, and the standard structure for that material. Pull concrete numbers and named examples, not vague claims. Verify key facts across sources; don't invent statistics.
-2. **Find key images** — search for relevant diagrams, product shots, or illustrative photos; download them to the sandbox and use them via `image` / `imagecard` (e.g. a real architecture diagram, a screenshot, a product photo). A few real images make a deck feel substantive. Mind usage rights for external images.
-3. **Then outline** — turn the researched material into the deck's narrative (pick the material framework below), so every slide carries a real point backed by a fact, number, example, or image — not filler.
+**① 立意 (Frame the goal).** Pin down: 主题、目标(看完要让受众相信什么/做什么)、受众(懂行还是外行)、场景(汇报/培训/对外…)、篇幅、材料类型. Write the deck's **single governing message** in one sentence — every slide must serve it. Map the material type to a narrative framework (see *Material frameworks* below: 培训/汇报/方案/复盘/产品/战略).
 
-Skip research only when the user supplied the content themselves. If a fact can't be verified, say so or leave it out — never fabricate data on a slide.
+**② 搭故事线 (Build the storyline — text only, no layout yet).**
+- *If the user gave an outline or source material*: use it; fix gaps and ordering so the logic is MECE, 总分, and 结论先行.
+- *If not*: **you design the outline.** Reason from goal+audience+framework about what sections it should contain and what question each section answers. Produce a slide-by-slide list where **each slide has one takeaway sentence** (the future title). Sanity-check the spine: one through-line, each section a sub-conclusion, the `agenda` mirrors the sections.
+
+**③ 找素材 (Research with web_search).** Go through the storyline and mark each point as *已知可直接写* vs *需检索*. For the latter, invoke the OpenClaw **`web_search` skill** to fetch accurate facts, current data/statistics, real named examples, definitions, and the conventional structure for that topic; **summarize the results into slide-ready content** (concrete numbers, named cases — not vague claims). Also search & download **key images** (diagrams, screenshots, product/photos) to use via `image`/`imagecard`. Verify across sources; **never fabricate data** — if unverifiable, drop it or flag it.
+
+**④ 定稿内容结构 (Lock the structure).** Fold the research back in; finalize section order and each slide's takeaway. For every slide decide its content load: **标题(结论)+ 主证据(数据/例子/图)+ 小结(banner)**. Cut anything that doesn't serve the governing message; split overloaded slides.
+
+**⑤ 逐页布局 (Compose each slide).** For each slide: pick structure from the **content-shape map** (not default cards) → compose **2–3 elements into one point** (see *Compose each slide as ONE point*) → write copy **通俗易懂** → mark at most one key node red. Keep deck-wide **variety** (no repeat on consecutive slides; ≥6–10 distinct structures; cards ≤⅓).
+
+**⑥ 自检与出片 (QA & render).** Run `python scripts/lint_variety.py outline.json` until `VARIETY OK`; `python scripts/validate.py deck.json`; render with **`node scripts/schema_to_pptx.js` (default, editable)**; if a renderer is available, `scripts/preview.js`/`render_inspect.py` to eyeball for overflow/overlap, then iterate.
+
+**⑦ 终审 (Review against the goal).** Re-read against ① — does every slide advance the governing message? Is the conclusion unmistakable and (for reports) the ask explicit? Trim, then deliver.
+
+Detailed rules for each phase are below.
 
 ## Authoring slides: prefer the auto-layout engine (compose a tree)
 
