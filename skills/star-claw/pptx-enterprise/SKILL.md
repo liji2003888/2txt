@@ -44,7 +44,9 @@ Icons inside colored/dark slots are always rendered **white** (monochrome sets `
 
 Compose decks with a clear overview-then-detail (总→分) logic: open with `cover`, then an `agenda`/overview slide listing the sections (总), break each section with a `section` divider, then detail it (分) with the layout matching the content shape, and close with `statement`/`closing`. The agenda items should mirror the actual sections in order, so the first pages establish the logical skeleton before diving into specifics. Vary layouts — never repeat the same one on consecutive slides; combine diagrams + icons + charts.
 
-On brand themes (those with `badgeColor`, e.g. `tcl_feishu`) every content page renders its title in **red at the top with a short red underline**, plus the left red corner badge and right TCL logo — matching the TCL standard header. The `cover` slide omits the corner chrome.
+On brand themes (those with `badgeColor`, e.g. `tcl_feishu`) every content page renders the TCL standard header: a **dark-navy bold title at the top + a thin light-gray divider**, plus the left red corner badge and right TCL logo. The palette is flat & corporate — **blue (`#1668DC` series) + navy (`#1A2332`) + red (`#E60012`, reserved for key nodes) + light-gray panels**; comparison/contrast panels pair blue with navy.
+
+Any content slide can add a bottom **黑红组合框 banner** (key takeaway) via `"banner": "text"` or `"banner": {"text": "...", "sub": "..."}` — renders a navy bar with a red left cap and white text. The `cover`/`full` slides omit the corner chrome.
 
 Shape elements support `"shadow": true` for a soft drop shadow (rendered on the PptxGenJS path and previews); the new card-based layouts use it for a clean, lifted look. Layouts adapt to content: item/column/step/card/level counts drive spacing and sizing, and accent colors rotate. They are **starting points, not rigid templates** — see the flexibility rule below.
 

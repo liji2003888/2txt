@@ -30,7 +30,10 @@ def palette(theme: dict) -> dict:
         "badge": bool(theme.get("badgeColor")),
         "red": theme.get("badgeColor") or "#E60012",
         "alert": theme.get("alert") or "#E60012",
-        "dark": theme.get("dark") or "#111111",
+        "navy": theme.get("navy") or "#1A2332",
+        "dark": theme.get("dark") or theme.get("navy") or "#1A2332",
+        "headerline": theme.get("headerline") or "#CCD6E0",
+        "titleColor": theme.get("titleColor") or theme.get("fontColor") or "#1A2332",
         "cover": theme.get("coverImage"),
         "coverDeco": theme.get("coverDeco"),
         "coverWordmark": theme.get("coverWordmark"),
@@ -74,13 +77,33 @@ def txt(s, left, top, w, h, size, color, *, bold=False, italic=False, align="lef
     return e
 
 
-def rect(left, top, w, h, fill, *, shape="rect", outline=None, shadow=False):
+def _shade(hex_color, factor):
+    """factor<1 darkens, >1 lightens."""
+    h = str(hex_color).lstrip("#")
+    if len(h) != 6:
+        return hex_color
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    f = lambda v: max(0, min(255, int(v * factor)))
+    return f"#{f(r):02X}{f(g):02X}{f(b):02X}"
+
+
+def rect(left, top, w, h, fill, *, shape="rect", outline=None, shadow=False, grad=False, glow=False):
     e = {"id": new_id(), "type": "shape", "shapeType": shape, "left": left, "top": top, "width": w, "height": h, "fill": fill}
     if outline:
         e["outline"] = outline
     if shadow:
         e["shadow"] = True
+    if grad:
+        # premium gradient fill (rasterized later); lighter top-left → deeper bottom-right
+        e["fillGrad"] = [_shade(fill, 1.18), _shade(fill, 0.82)]
+        e["gradAngle"] = 120
+        if glow:
+            e["glow"] = True
     return e
+
+
+def gcircle(left, top, d, fill, *, glow=True):
+    return rect(left, top, d, d, fill, shape="ellipse", grad=True, glow=glow)
 
 
 def card(left, top, w, h, fill, *, shape="roundRect", outline=None):
@@ -115,20 +138,33 @@ def _text_w(s, size):
 
 
 def header(title, pal):
+    # TCL standard header: dark navy bold title pinned to the top + a thin light-gray divider.
     els = []
     if pal.get("badge"):
-        red = pal["red"]
-        # Title pinned to the top to match the TCL master (title ~y14, divider ~y46).
-        els.append(txt(title, 84, 8, 760, 40, 26, red, bold=True, valign="middle", font=pal["font"]))
-        # Divider under the title; tagged headerline so the template renderer skips it
-        # (the master's '标题幻灯片' layout already draws this divider).
-        line = rect(84, 50, 165, 4, red)
+        els.append(txt(title, 84, 8, 800, 40, 28, pal["titleColor"], bold=True, valign="middle", font=pal["font"]))
+        # thin gray divider under the title; tagged headerline so the master path skips it
+        # (the master '标题幻灯片' layout draws its own gray divider).
+        uw = int(min(max(_text_w(title, 28) + 30, 340), 760))
+        line = rect(84, 56, uw, 2, pal["headerline"])
         line["role"] = "headerline"
         els.append(line)
     else:
         els.append(rect(MARGIN, 54, 8, 36, pal["primary"]))
         els.append(txt(title, MARGIN + 20, 50, 700, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]))
         els.append(hline(MARGIN, 104, W - 2 * MARGIN, pal["line"], 1))
+    return els
+
+
+def banner_elements(text, pal, *, sub=None):
+    """Bottom 黑红组合框: a red left cap + a navy bar with white text (key takeaway)."""
+    by, bh = 486, 42
+    els = [
+        rect(0, by, W, bh, pal["navy"]),
+        rect(0, by, 16, bh, pal["alert"]),
+    ]
+    els.append(txt(text, 44, by, (W - 80) if not sub else 560, bh, 16, "#FFFFFF", bold=True, valign="middle", font=pal["font"]))
+    if sub:
+        els.append(txt(sub, 600, by, W - 640, bh, 13, "#C8D2DF", italic=True, valign="middle", font=pal["font"]))
     return els
 
 
@@ -172,8 +208,7 @@ def chrome_elements(theme: dict):
 
 def footer(pal, page):
     return [
-        rect(0, 530, W, 10, pal["primary"]),
-        txt(str(page), W - 100, 502, 50, 20, 11, pal["muted"], align="right", font=pal["font"]),
+        txt(str(page), W - 70, 512, 40, 18, 11, pal["muted"], align="right", font=pal["font"]),
     ]
 
 
@@ -326,7 +361,7 @@ def chart_layout(spec, pal):
 def comparison_layout(spec, pal):
     els = header(spec.get("title", ""), pal)
     cy, ch = 132, 350
-    for side, x0, color in (("left", MARGIN, pal["primary"]), ("right", MARGIN + 420, pal["secondary"])):
+    for side, x0, color in (("left", MARGIN, pal["primary"]), ("right", MARGIN + 420, pal["navy"])):
         data = spec.get(side, {})
         els.append(rect(x0, cy, 396, ch, pal["light"], shape="roundRect"))
         els.append(rect(x0, cy, 396, 44, color, shape="roundRect"))

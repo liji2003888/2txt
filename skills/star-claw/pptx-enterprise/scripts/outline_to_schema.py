@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, chrome_elements
+from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, chrome_elements, banner_elements
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS_W, CANVAS_H = 960, 540
@@ -88,6 +88,51 @@ def resolve_charts(deck: dict) -> None:
             el["src"] = str(out)
 
 
+def resolve_gradients(deck: dict) -> None:
+    """Rasterize shapes that carry fillGrad into transparent gradient PNGs (with optional glow),
+    keeping all text native/editable. Premium look without native-gradient support."""
+    import hashlib
+    todo, refs = [], []
+    for slide in deck["slides"]:
+        for el in slide["elements"]:
+            if el.get("type") != "shape" or not el.get("fillGrad"):
+                continue
+            w, h = int(el["width"]), int(el["height"])
+            glow = bool(el.get("glow"))
+            pad = round(min(w, h) * 0.12) if glow else 2
+            spec = {"shape": el.get("shapeType", "roundRect"), "w": w, "h": h,
+                    "c1": el["fillGrad"][0], "c2": el["fillGrad"][1],
+                    "angle": el.get("gradAngle", 120), "glow": glow,
+                    "radius": round(min(w, h) * 0.12) if el.get("shapeType") == "roundRect" else 0}
+            key = hashlib.md5(json.dumps(spec, sort_keys=True).encode()).hexdigest()[:14]
+            out = ICON_CACHE / f"grad_{key}.png"
+            spec["out"] = str(out)
+            todo.append(spec)
+            refs.append((el, out, pad, w, h))
+    if not refs:
+        return
+    ICON_CACHE.mkdir(parents=True, exist_ok=True)
+    pending = [s for s in todo if not Path(s["out"]).exists()]
+    if pending:
+        mf = ICON_CACHE / "_grads.json"
+        mf.write_text(json.dumps(pending, ensure_ascii=False), encoding="utf-8")
+        r = subprocess.run(["node", str(ROOT / "scripts" / "shape_img.js"), str(mf)], capture_output=True, text=True)
+        if r.returncode != 0:
+            print(r.stdout + r.stderr, file=sys.stderr)
+    for el, out, pad, w, h in refs:
+        if not out.exists():
+            continue
+        # expand bounds to include glow/anti-alias padding, keep shape centered
+        el["left"] = el["left"] - pad
+        el["top"] = el["top"] - pad
+        el["width"] = w + pad * 2
+        el["height"] = h + pad * 2
+        for k in ("shapeType", "fill", "fillGrad", "gradAngle", "glow", "shadow", "outline"):
+            el.pop(k, None)
+        el["type"] = "image"
+        el["src"] = str(out)
+
+
 def build(outline: dict, theme: dict) -> dict:
     pal = palette(theme)
     specs = outline.get("slides", [])
@@ -116,6 +161,12 @@ def build(outline: dict, theme: dict) -> dict:
         chrome_ok = layout != "cover" and spec.get("chrome", True)
         if chrome_ok and slide["background"].get("color") == pal["bg"]:
             slide["elements"].extend(chrome_elements(theme))
+        if spec.get("banner"):
+            b = spec["banner"]
+            if isinstance(b, dict):
+                slide["elements"].extend(banner_elements(b.get("text", ""), palette(theme), sub=b.get("sub")))
+            else:
+                slide["elements"].extend(banner_elements(str(b), palette(theme)))
         if layout in CONTENT_LAYOUTS:
             page += 1
             slide["elements"].extend(footer(pal, page))
@@ -129,6 +180,7 @@ def build(outline: dict, theme: dict) -> dict:
         },
         "slides": slides,
     }
+    resolve_gradients(deck)
     resolve_charts(deck)
     resolve_icons(deck)
     return deck
