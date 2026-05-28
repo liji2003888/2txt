@@ -102,12 +102,30 @@ function pieChart(c, W, H, font, donut) {
   return svg;
 }
 
+function gaugeChart(c, W, H, font) {
+  const colors = c.colors && c.colors.length ? c.colors : DEF;
+  const accent = colors[0];
+  const pct = Math.max(0, Math.min(100, (c.series && c.series[0] && c.series[0].values && c.series[0].values[0]) || 0));
+  const label = (c.labels && c.labels[0]) || '';
+  const cx = W / 2, cy = H / 2 + 6, r = Math.min(W, H) * 0.36, sw = Math.max(10, r * 0.22);
+  const polar = (deg) => [cx + r * Math.cos((deg - 90) * Math.PI / 180), cy + r * Math.sin((deg - 90) * Math.PI / 180)];
+  const a = pct / 100 * 360;
+  const [sx, sy] = polar(0), [ex, ey] = polar(a);
+  const large = a > 180 ? 1 : 0;
+  let svg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#E4EAF2" stroke-width="${sw}"/>`;
+  if (pct > 0) svg += `<path d="M${sx},${sy} A${r},${r} 0 ${large} 1 ${ex},${ey}" fill="none" stroke="${accent}" stroke-width="${sw}" stroke-linecap="round"/>`;
+  svg += `<text x="${cx}" y="${cy - 2}" font-size="${r * 0.5}" fill="${accent}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" font-family="${font}">${pct}%</text>`;
+  if (label) svg += `<text x="${cx}" y="${cy + r * 0.34}" font-size="${r * 0.18}" fill="#5C6B7D" text-anchor="middle" font-family="${font}">${esc(label)}</text>`;
+  return svg;
+}
+
 function render(c) {
   const W = c.width || 760, H = c.height || 360;
   const font = c.font || 'sans-serif';
   let inner;
   if (c.type === 'pie') inner = pieChart(c, W, H, font, false);
   else if (c.type === 'donut') inner = pieChart(c, W, H, font, true);
+  else if (c.type === 'gauge') inner = gaugeChart(c, W, H, font);
   else inner = axisChart(c, W, H, font);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#FFFFFF"/>${inner}</svg>`;
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: W * 2 } }).render().asPng();

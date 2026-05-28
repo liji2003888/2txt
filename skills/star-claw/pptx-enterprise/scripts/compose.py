@@ -67,6 +67,14 @@ def measure(node, pal, w):
         return 132
     if t in ("arrowflow", "steps"):
         return 100
+    if t == "quadrant":
+        return node.get("h", 300)
+    if t == "funnel":
+        return max(200, 44 * len(node.get("items", [])) + 20)
+    if t == "gauge":
+        return node.get("h", 200)
+    if t == "balance":
+        return node.get("h", 280)
     if t == "spacer":
         return node.get("h", 20)
     return 40
@@ -266,6 +274,71 @@ def _component(node, pal, x, y, w, h, els):
                 els.append(txt(it["sub"], int(nx) + 12, y + h - 30, int(nw) - 24, 24, 11, "#DCE8F7", align="center", font=pal["font"]))
             if i < n - 1:
                 els.append(txt("➜", int(nx + nw), y, arrow, h, 18, pal["muted"], bold=True, align="center", valign="middle", font=pal["font"]))
+    elif t == "quadrant":
+        # SWOT / 四象限: 2x2 cells, each a shadowed card with colored header + bullets
+        cells = node.get("items", [])[:4]
+        gap = 16
+        cw = (w - gap) / 2
+        ch = (h - gap) / 2
+        for i in range(4):
+            c = cells[i] if i < len(cells) else {}
+            r, col = divmod(i, 2)
+            cx = x + col * (cw + gap)
+            cyy = y + r * (ch + gap)
+            accent = accent_for(pal, i, c)
+            els.append(card(int(cx), int(cyy), int(cw), int(ch), pal["light"]))
+            els.append(rect(int(cx), int(cyy), int(cw), 40, accent, shape="roundRect"))
+            els.append(txt(c.get("title", ""), int(cx) + PAD, int(cyy), int(cw) - 2 * PAD, 40, 15, "#FFFFFF", bold=True, valign="middle", font=pal["font"]))
+            iy = int(cyy) + 40 + 12
+            for it in (c.get("items", [])[:4]):
+                els.append(rect(int(cx) + PAD, iy + 7, 7, 7, accent, shape="ellipse"))
+                els.append(txt(str(it), int(cx) + PAD + 16, iy, int(cw) - 2 * PAD - 20, 24, 12.5, pal["ink"], valign="middle", font=pal["font"]))
+                iy += 28
+    elif t == "funnel":
+        stages = node.get("items", [])
+        n = max(1, len(stages))
+        gap = 8
+        bh = (h - gap * (n - 1)) / n
+        maxw, minw = w, w * 0.42
+        for i, st in enumerate(stages):
+            st = st if isinstance(st, dict) else {"label": str(st)}
+            frac = 1 - (i / (n - 1) if n > 1 else 0)
+            bw = minw + (maxw - minw) * frac
+            bx = x + (w - bw) / 2
+            by = y + i * (bh + gap)
+            accent = accent_for(pal, i, st)
+            els.append(rect(int(bx), int(by), int(bw), int(bh), accent, shape="trapezoid" if i < n - 1 else "roundRect", shadow=True))
+            lab = st.get("label", "")
+            if st.get("value"):
+                lab = f"{lab}  ·  {st['value']}"
+            els.append(txt(lab, int(bx), int(by), int(bw), int(bh), 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    elif t == "gauge":
+        els.append({"id": new_id(), "type": "chart", "left": x, "top": y, "width": w, "height": h,
+                    "chartType": "gauge", "data": {"labels": [node.get("label", "")], "series": [{"name": "", "values": [node.get("value", 0)]}]},
+                    "themeColors": [accent_for(pal, node.get("_i", 0), node)] + pal["accents"]})
+    elif t == "balance":
+        # 对比天平: a beam + fulcrum + two pans (left vs right)
+        left = node.get("left", {})
+        right = node.get("right", {})
+        beam_y = y + 30
+        els.append(rect(x + 40, beam_y, w - 80, 8, pal["primary"], shape="roundRect"))
+        # fulcrum triangle at center
+        els.append({"id": new_id(), "type": "shape", "shapeType": "triangle", "left": int(x + w / 2 - 26), "top": beam_y + 8, "width": 52, "height": 40, "fill": pal["navy"]})
+        els.append(txt("VS", int(x + w / 2 - 26), beam_y + 14, 52, 30, 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        pan_w = (w - 120) / 2
+        pan_y = beam_y + 70
+        pan_h = y + h - pan_y - 6
+        for side, px, data in (("L", x + 20, left), ("R", x + w - 20 - pan_w, right)):
+            accent = pal["primary"] if side == "L" else pal["navy"]
+            els.append(rect(int(px + (pan_w / 2) - 1), beam_y + 4, 2, 66, pal["line"]))
+            els.append(card(int(px), int(pan_y), int(pan_w), int(pan_h), pal["light"]))
+            els.append(rect(int(px), int(pan_y), int(pan_w), 40, accent, shape="roundRect"))
+            els.append(txt(data.get("title", ""), int(px) + PAD, int(pan_y), int(pan_w) - 2 * PAD, 40, 15, "#FFFFFF", bold=True, valign="middle", font=pal["font"]))
+            iy = int(pan_y) + 52
+            for it in data.get("items", [])[:5]:
+                els.append(rect(int(px) + PAD, iy + 7, 7, 7, accent, shape="ellipse"))
+                els.append(txt(str(it), int(px) + PAD + 16, iy, int(pan_w) - 2 * PAD - 20, 24, 12.5, pal["ink"], valign="middle", font=pal["font"]))
+                iy += 28
     # spacer: nothing
 
 
