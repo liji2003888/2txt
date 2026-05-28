@@ -1,0 +1,8 @@
+{
+  "brand": "TCL",
+  "fontName": "Noto Sans CJK SC",
+  "fontColor": "#111111",
+  "backgroundColor": "#FFFFFF",
+  "themeColors": ["#E60012", "#0F4C81", "#F5A623", "#7ED321", "#9013FE", "#4A4A4A"],
+  "logo": "assets/tcl_logo.png"
+}

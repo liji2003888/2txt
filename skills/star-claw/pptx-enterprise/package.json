@@ -1,0 +1,18 @@
+{
+  "name": "pptx-enterprise-scripts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node-side scripts for the pptx-enterprise Skill. Python scripts live alongside; see SKILL.md.",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0",
+    "pptxtojson": "^1.0.0"
+  },
+  "scripts": {
+    "schema-to-pptx": "node scripts/schema_to_pptx.js",
+    "schema-to-html": "node scripts/schema_to_html.js",
+    "pptx-to-schema": "node scripts/pptx_to_schema.js"
+  }
+}

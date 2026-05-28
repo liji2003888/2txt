@@ -1,0 +1,53 @@
+{
+  "title": "OpenClaw 企业级 PPT 能力",
+  "subtitle": "Schema 驱动的双产物架构",
+  "sections": [
+    {
+      "title": "背景与目标",
+      "slides": [
+        {
+          "title": "为什么要做",
+          "bullets": [
+            "TCL 业务汇报/对外宣讲的 PPT 制作分散在各部门",
+            "缺乏统一品牌一致性与复用机制",
+            "AI 大模型已能生成内容,缺的是工程化承接"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "技术方案",
+      "slides": [
+        {
+          "title": "三大渲染路径",
+          "bullets": [
+            "从零生成:PptxGenJS + JSON",
+            "模板填充:python-pptx 原地改占位符(品牌保真)",
+            "Web 渲染:Fork PPTist(AGPL,内部隔离)"
+          ]
+        },
+        {
+          "title": "Schema 为单一真相源",
+          "bullets": [
+            "采用 PPTist 元素结构,px 单位,960×540 画布",
+            "支持 text/image/shape/line/table/chart/latex",
+            "渲染器是 Schema 的投影,不是各自重新建模"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "下一步",
+      "slides": [
+        {
+          "title": "里程碑",
+          "bullets": [
+            "M1:Schema + 从零 .pptx + 视觉 QA 回环",
+            "M2:Fork PPTist 进 web/,接通在线编辑",
+            "M3:接入 TCL 标准模板与品牌资产"
+          ]
+        }
+      ]
+    }
+  ]
+}

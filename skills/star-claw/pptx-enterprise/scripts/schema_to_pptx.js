@@ -1,0 +1,159 @@
+#!/usr/bin/env node
+// Slide JSON -> .pptx via PptxGenJS. Schema is px on 960x540 canvas; output is 13.333x7.5 in (16:9).
+const fs = require('fs');
+const pptxgen = require('pptxgenjs');
+
+const args = process.argv.slice(2);
+if (args.length < 2) {
+  console.error('usage: schema_to_pptx.js <deck.json> <out.pptx>');
+  process.exit(2);
+}
+const deck = JSON.parse(fs.readFileSync(args[0], 'utf-8'));
+const outPath = args[1];
+
+const PPT_W_IN = 13.333;
+const PPT_H_IN = 7.5;
+const canvasW = (deck.meta && deck.meta.width) || 960;
+const canvasH = (deck.meta && deck.meta.height) || 540;
+const px2inX = (x) => (x / canvasW) * PPT_W_IN;
+const px2inY = (y) => (y / canvasH) * PPT_H_IN;
+const stripHash = (c) => (c || '').replace('#', '');
+
+const pres = new pptxgen();
+pres.defineLayout({ name: 'OC16x9', width: PPT_W_IN, height: PPT_H_IN });
+pres.layout = 'OC16x9';
+if (deck.meta && deck.meta.title) pres.title = deck.meta.title;
+
+const themeFont = (deck.meta && deck.meta.theme && deck.meta.theme.fontName) || 'Calibri';
+
+const stripHtml = (html) =>
+  String(html)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|li|div)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+
+const splitBullets = (html) => {
+  const items = [...String(html).matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => stripHtml(m[1]));
+  return items.length ? items : null;
+};
+
+for (const slide of deck.slides) {
+  const s = pres.addSlide();
+  if (slide.background && slide.background.type === 'solid' && slide.background.color) {
+    s.background = { color: stripHash(slide.background.color) };
+  } else if (slide.background && slide.background.type === 'image' && slide.background.image) {
+    s.background = { path: slide.background.image };
+  }
+  for (const el of slide.elements || []) {
+    const box = {
+      x: px2inX(el.left),
+      y: px2inY(el.top),
+      w: px2inX(el.width),
+      h: px2inY(el.height),
+      rotate: el.rotate || 0,
+    };
+    if (el.type === 'text') {
+      const bullets = splitBullets(el.content);
+      const fill = el.fill ? { color: stripHash(el.fill) } : undefined;
+      const baseOpts = {
+        ...box,
+        fontSize: el.fontSize || 18,
+        color: stripHash(el.defaultColor || '#000000'),
+        fontFace: el.defaultFontName || themeFont,
+        fill,
+        valign: 'top',
+      };
+      if (bullets) {
+        s.addText(
+          bullets.map((t) => ({ text: t, options: { bullet: true } })),
+          baseOpts,
+        );
+      } else {
+        const text = stripHtml(el.content);
+        const bold = /<strong>|<b>/i.test(el.content || '');
+        const align = /text-align:\s*center/i.test(el.content || '') ? 'center' : 'left';
+        s.addText(text, { ...baseOpts, bold, align });
+      }
+    } else if (el.type === 'image') {
+      s.addImage({ ...box, path: el.src });
+    } else if (el.type === 'shape') {
+      const shapeMap = {
+        rect: pres.ShapeType.rect,
+        roundRect: pres.ShapeType.roundRect,
+        ellipse: pres.ShapeType.ellipse,
+        triangle: pres.ShapeType.triangle,
+        diamond: pres.ShapeType.diamond,
+        arrow: pres.ShapeType.rightArrow,
+        star: pres.ShapeType.star5,
+      };
+      const fill = { color: stripHash(el.fill || '#CCCCCC') };
+      s.addShape(shapeMap[el.shapeType] || pres.ShapeType.rect, { ...box, fill });
+      if (el.text && el.text.content) {
+        s.addText(stripHtml(el.text.content), {
+          ...box,
+          fontSize: 16,
+          color: stripHash((el.text && el.text.defaultColor) || '#000000'),
+          fontFace: (el.text && el.text.defaultFontName) || themeFont,
+          align: 'center',
+          valign: 'middle',
+        });
+      }
+    } else if (el.type === 'line') {
+      const x1 = px2inX(el.left + ((el.start && el.start[0]) || 0));
+      const y1 = px2inY(el.top + ((el.start && el.start[1]) || 0));
+      const x2 = px2inX(el.left + ((el.end && el.end[0]) || el.width));
+      const y2 = px2inY(el.top + ((el.end && el.end[1]) || 0));
+      s.addShape(pres.ShapeType.line, {
+        x: Math.min(x1, x2),
+        y: Math.min(y1, y2),
+        w: Math.abs(x2 - x1) || 0.01,
+        h: Math.abs(y2 - y1) || 0.01,
+        line: {
+          color: stripHash(el.color || '#000000'),
+          width: el.width || 1,
+          dashType: el.style === 'dashed' ? 'dash' : 'solid',
+        },
+      });
+    } else if (el.type === 'table') {
+      const rows = (el.data || []).map((row) => row.map((cell) => ({ text: (cell && cell.text) || '' })));
+      s.addTable(rows, {
+        ...box,
+        fontSize: 12,
+        fontFace: themeFont,
+        border: { type: 'solid', pt: 1, color: 'CCCCCC' },
+      });
+    } else if (el.type === 'chart') {
+      const chartTypeMap = {
+        bar: pres.ChartType.bar,
+        line: pres.ChartType.line,
+        pie: pres.ChartType.pie,
+        area: pres.ChartType.area,
+        scatter: pres.ChartType.scatter,
+      };
+      const seriesIn = (el.data && el.data.series) || [];
+      const labels = (el.data && el.data.labels) || [];
+      const data = seriesIn.map((ser) => ({ name: ser.name, labels, values: ser.values || [] }));
+      s.addChart(chartTypeMap[el.chartType] || pres.ChartType.bar, data, {
+        ...box,
+        showLegend: true,
+        chartColors: el.themeColors,
+      });
+    } else if (el.type === 'latex') {
+      if (el.path) s.addImage({ ...box, data: el.path });
+    }
+  }
+  if (slide.remark) s.addNotes(slide.remark);
+}
+
+pres
+  .writeFile({ fileName: outPath })
+  .then(() => console.log(`wrote ${outPath}`))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
