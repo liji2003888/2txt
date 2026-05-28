@@ -2,10 +2,11 @@
   "title": "AI+飞书应用分享",
   "slides": [
     {
-      "layout": "title",
-      "title": "鲲鹏展翅 比翼齐飞",
-      "subtitle": "AI+飞书应用分享",
-      "footer": "AI应用开发部 · 数字化转型中心"
+      "layout": "cover",
+      "meta": "保密等级:秘密   报告归档:中心内",
+      "title": "AI+飞书应用分享",
+      "dept": "AI应用开发部",
+      "author": "数字化转型中心"
     },
     {
       "layout": "kpi",

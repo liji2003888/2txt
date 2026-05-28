@@ -28,6 +28,8 @@ def palette(theme: dict) -> dict:
         "font": theme.get("fontName") or theme.get("font") or "",
         "bg": theme.get("backgroundColor") or theme.get("bg") or "#FFFFFF",
         "badge": bool(theme.get("badgeColor")),
+        "red": theme.get("badgeColor") or "#E60012",
+        "cover": theme.get("coverImage"),
     }
 
 
@@ -75,14 +77,24 @@ def _slide(elements, background=None, remark=None):
     return s
 
 
+def _text_w(s, size):
+    w = 0
+    for ch in str(s):
+        w += size * (0.95 if ord(ch) > 0x2E80 else 0.55)
+    return w
+
+
 def header(title, pal):
     els = []
     if pal.get("badge"):
-        els.append(txt(title, 84, 50, 660, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]))
+        red = pal["red"]
+        els.append(txt(title, 84, 40, 760, 44, 26, red, bold=True, valign="middle", font=pal["font"]))
+        uw = min(_text_w(title, 26) + 10, 800)
+        els.append(rect(84, 92, int(uw), 5, red))
     else:
         els.append(rect(MARGIN, 54, 8, 36, pal["primary"]))
         els.append(txt(title, MARGIN + 20, 50, 700, 44, 26, pal["ink"], bold=True, valign="middle", font=pal["font"]))
-    els.append(hline(MARGIN, 104, W - 2 * MARGIN, pal["line"], 1))
+        els.append(hline(MARGIN, 104, W - 2 * MARGIN, pal["line"], 1))
     return els
 
 
@@ -495,8 +507,42 @@ def pyramid_layout(spec, pal):
     return _slide(els, remark=spec.get("notes"))
 
 
+def cover_layout(spec, pal):
+    red = pal["red"]
+    cover = pal.get("cover")
+    p = None
+    if cover:
+        pp = Path(cover)
+        if not pp.is_absolute():
+            pp = _ROOT / pp
+        if pp.exists():
+            p = str(pp)
+    els = []
+    if p:
+        # Clean cover background image; overlay only the editable fields.
+        els.append({"id": new_id(), "type": "image", "src": p, "left": 0, "top": 0, "width": W, "height": H})
+        els.append(txt(spec.get("title", "材料标题"), 48, 250, 560, 80, 40, "#FFFFFF", bold=True, font=pal["font"]))
+        if spec.get("dept"):
+            els.append(txt(spec["dept"], 48, 412, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+        if spec.get("author"):
+            els.append(txt(spec["author"], 48, 456, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+        return _slide(els)
+    # Fallback (no cover image yet): approximate TCL red cover — lacks the building photo.
+    els.append(rect(0, 0, 560, H, red))
+    if spec.get("meta"):
+        els.append(txt(spec["meta"], 48, 38, 500, 24, 11, "#FFFFFF", font=pal["font"]))
+    els.append(txt(spec.get("brand", "TCL 华星"), 48, 150, 480, 80, 46, "#FFFFFF", bold=True, font=pal["font"]))
+    els.append(txt(spec.get("title", "材料标题"), 48, 258, 480, 70, 34, "#FFFFFF", bold=True, font=pal["font"]))
+    if spec.get("dept"):
+        els.append(txt(spec["dept"], 48, 404, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+    if spec.get("author"):
+        els.append(txt(spec["author"], 48, 446, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+    return _slide(els)
+
+
 LAYOUTS = {
     "title": title_layout,
+    "cover": cover_layout,
     "section": section_layout,
     "bullets": bullets_layout,
     "agenda": agenda_layout,

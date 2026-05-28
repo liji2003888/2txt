@@ -23,7 +23,9 @@ For one-off, highly custom slides you may emit `deck.json` directly per `schema/
 
 #### Layout catalog (`layouts.py`)
 
-`title`, `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `matrix` (capability matrix: N category columns × item lists), `hierarchy` (root box + connected tier cards), `circles` (3 overlapping concept circles + side copy), `pyramid` (stacked levels, `inverted` for funnel), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+`title`, `cover` (branded title page: uses `theme.coverImage` as a clean full-bleed background and overlays only `title`/`dept`/`author`; falls back to a primitive red cover), `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `chart`, `comparison`, `process` (numbered step flow), `timeline` (milestones), `matrix` (capability matrix: N category columns × item lists), `hierarchy` (root box + connected tier cards), `circles` (3 overlapping concept circles + side copy), `pyramid` (stacked levels, `inverted` for funnel), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+
+On brand themes (those with `badgeColor`, e.g. `tcl_feishu`) every content page renders its title in **red at the top with a short red underline**, plus the left red corner badge and right TCL logo — matching the TCL standard header. The `cover` slide omits the corner chrome.
 
 Layouts adapt to content: item/column/step/card/level counts drive spacing and sizing, and accent colors rotate. They are **starting points, not rigid templates** — see the flexibility rule below.
 
