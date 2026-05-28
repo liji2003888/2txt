@@ -1,0 +1,56 @@
+{
+  "title": "AI+飞书应用分享",
+  "slides": [
+    {
+      "layout": "title",
+      "title": "鲲鹏展翅 比翼齐飞",
+      "subtitle": "AI+飞书应用分享",
+      "footer": "AI应用开发部 · 数字化转型中心"
+    },
+    {
+      "layout": "kpi",
+      "title": "信息日常 · 一位 AI 应用开发同事的一周",
+      "stats": [
+        {"value": "10+", "label": "场会议 / 周 · 会议纪要"},
+        {"value": "200+", "label": "群消息 / 天 · 飞书消息"},
+        {"value": "20+", "label": "邮件 / 天 · 邮件 / 文档"}
+      ]
+    },
+    {
+      "layout": "process",
+      "title": "智能伙伴小黑 · 一条回复背后的五步",
+      "steps": [
+        {"title": "感知接收", "body": "探测飞书消息 / 邮件 / 会议纪要 / 日报 / AI 资讯"},
+        {"title": "智能识别", "body": "异常识别 + 语义提取(系统 / 环境 / 责任人)"},
+        {"title": "响应登记", "body": "即时回复 + 自动写入协作台(任务 / 风险 / 责任)"},
+        {"title": "提醒推进", "body": "任务推送 + 到期督办,跟踪闭环"},
+        {"title": "沉淀复盘", "body": "纳入运维日报,周维度反哺改进"}
+      ]
+    },
+    {
+      "layout": "comparison",
+      "title": "星Claw vs 飞书龙虾",
+      "left": {"title": "星Claw(华星)", "items": ["安全沙箱运行", "核心数据不出网", "敏感数据自动脱敏", "内部业务系统联动"]},
+      "right": {"title": "外部龙虾", "items": ["个人轻量使用", "数据安全风险", "误操作 / 投毒风险", "成本不可控"]}
+    },
+    {
+      "layout": "cards",
+      "title": "行动建议 · 培养你自己的智能伙伴",
+      "cards": [
+        {"tag": "①", "title": "FIND 找痛点", "body": "每天最烦你的事:重复工作、多系统查信息、反复回复"},
+        {"tag": "②", "title": "BUILD 造分身", "body": "定义 AI 人格:他是谁、做什么,试跑 → 调试 → 上线"},
+        {"tag": "③", "title": "GROW 养起来", "body": "长期记忆、持续微调、7×24 在状态,越用越懂你"}
+      ]
+    },
+    {
+      "layout": "statement",
+      "subtitle": "行动建议",
+      "text": "底座已备好,接下来该你了 —— 每个人都需要一个最懂自己的智能伙伴。"
+    },
+    {
+      "layout": "closing",
+      "title": "谢谢",
+      "subtitle": "Not using a tool. Raising a companion."
+    }
+  ]
+}

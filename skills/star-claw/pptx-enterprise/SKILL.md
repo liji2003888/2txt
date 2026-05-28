@@ -27,7 +27,7 @@ For one-off, highly custom slides you may emit `deck.json` directly per `schema/
 
 #### Themes
 
-The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. Ships with `assets/tcl_branding.json` (default red) and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` — so dark themes (e.g. `midnight`) recolor backgrounds and panels automatically. Author new themes by copying one of these.
+The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. Ships with `assets/tcl_branding.json` (default red), `assets/themes/tcl_feishu.json` (blue, extracted from the TCL AI+飞书 reference deck), and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` — so dark themes (e.g. `midnight`) recolor backgrounds and panels automatically. Author new themes by copying one of these.
 
 #### Design rules — DO NOT produce text dumps
 
