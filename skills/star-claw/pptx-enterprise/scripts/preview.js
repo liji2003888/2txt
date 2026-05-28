@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+// Visual QA without LibreOffice: render ONE slide of a deck JSON to PNG via SVG + resvg-js.
+// usage: preview.js <deck.json> <slideIndex> <out.png>
+const fs = require('fs');
+const { Resvg } = require('@resvg/resvg-js');
+
+const [deckPath, idxStr, outPath] = process.argv.slice(2);
+if (!deckPath || !outPath) {
+  console.error('usage: preview.js <deck.json> <slideIndex> <out.png>');
+  process.exit(2);
+}
+const deck = JSON.parse(fs.readFileSync(deckPath, 'utf-8'));
+const W = (deck.meta && deck.meta.width) || 960;
+const H = (deck.meta && deck.meta.height) || 540;
+const slide = deck.slides[parseInt(idxStr || '0', 10)];
+
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const stripHtml = (h) =>
+  String(h).replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|li|div)>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+const dataUri = (src) => {
+  try {
+    if (/^data:/.test(src)) return src;
+    const b = fs.readFileSync(src);
+    const e = (src.split('.').pop() || 'png').toLowerCase();
+    const m = e === 'svg' ? 'image/svg+xml' : e === 'jpg' || e === 'jpeg' ? 'image/jpeg' : 'image/' + e;
+    return `data:${m};base64,${b.toString('base64')}`;
+  } catch {
+    return null;
+  }
+};
+const charW = (ch, sz) => (ch.charCodeAt(0) > 0x2e80 ? sz : sz * 0.55);
+const wrap = (text, width, sz) => {
+  const out = [];
+  for (const para of String(text).split('\n')) {
+    let line = '', w = 0;
+    for (const ch of para) {
+      const cw = charW(ch, sz);
+      if (w + cw > width && line) { out.push(line); line = ''; w = 0; }
+      line += ch; w += cw;
+    }
+    out.push(line);
+  }
+  return out;
+};
+
+let svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+const bg = (slide.background && slide.background.color) || (deck.meta && deck.meta.theme && deck.meta.theme.backgroundColor) || '#FFFFFF';
+svg += `<rect width="${W}" height="${H}" fill="${bg}"/>`;
+for (const el of slide.elements || []) {
+  const x = el.left, y = el.top, w = el.width, h = el.height;
+  if (el.type === 'shape') {
+    const fill = el.fill || '#CCCCCC';
+    if (el.shapeType === 'ellipse') svg += `<ellipse cx="${x + w / 2}" cy="${y + h / 2}" rx="${w / 2}" ry="${h / 2}" fill="${fill}"/>`;
+    else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${el.shapeType === 'roundRect' ? 8 : 0}" fill="${fill}"/>`;
+  } else if (el.type === 'line') {
+    const x1 = x + ((el.start && el.start[0]) || 0), y1 = y + ((el.start && el.start[1]) || 0);
+    const x2 = x + ((el.end && el.end[0]) || w), y2 = y + ((el.end && el.end[1]) || 0);
+    svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${el.color || '#000'}" stroke-width="${el.width || 1}"/>`;
+  } else if (el.type === 'image') {
+    const u = dataUri(el.src);
+    if (u) svg += `<image x="${x}" y="${y}" width="${w}" height="${h}" xlink:href="${u}" preserveAspectRatio="${el.fixedRatio ? 'xMidYMid meet' : 'none'}"/>`;
+    else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#eeeeee" stroke="#999999"/>`;
+  } else if (el.type === 'table') {
+    svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#cccccc"/>`;
+  } else if (el.type === 'text') {
+    const sz = el.fontSize || 18, color = el.defaultColor || '#000000';
+    const lines = wrap(stripHtml(el.content), w, sz), lh = sz * 1.3;
+    const align = el.align || 'left';
+    const anchor = align === 'center' ? 'middle' : align === 'right' ? 'end' : 'start';
+    const tx = align === 'center' ? x + w / 2 : align === 'right' ? x + w : x;
+    let ty = y + sz;
+    if (el.valign === 'middle') ty = y + h / 2 - (lines.length - 1) * lh / 2 + sz * 0.35;
+    for (const ln of lines) {
+      svg += `<text x="${tx}" y="${ty}" font-size="${sz}" fill="${color}" text-anchor="${anchor}" font-family="sans-serif"${el.bold ? ' font-weight="bold"' : ''}>${esc(ln)}</text>`;
+      ty += lh;
+    }
+  }
+}
+svg += '</svg>';
+const png = new Resvg(svg, { fitTo: { mode: 'width', value: W * 2 } }).render().asPng();
+fs.writeFileSync(outPath, png);
+console.log('wrote', outPath);

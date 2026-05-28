@@ -497,12 +497,12 @@ def pyramid_layout(spec, pal):
     els = header(spec.get("title", ""), pal)
     levels = spec.get("levels", [])
     n = max(1, len(levels))
-    top, gap = 132, 12
-    band_h = min(72, (470 - top - (n - 1) * gap) / n)
-    maxw, minw = W - 2 * MARGIN, (W - 2 * MARGIN) * 0.42
+    top, bottom, gap = 122, 500, 14
+    band_h = (bottom - top - (n - 1) * gap) / n
+    maxw, minw = W - 2 * MARGIN, (W - 2 * MARGIN) * 0.46
     inverted = spec.get("inverted", False)
     for i, lv in enumerate(levels):
-        frac = i / (n - 1) if n > 1 else 1
+        frac = i / (n - 1) if n > 1 else 1.0
         if inverted:
             frac = 1 - frac
         w = minw + (maxw - minw) * frac
@@ -512,9 +512,11 @@ def pyramid_layout(spec, pal):
         label = lv.get("label", "") if isinstance(lv, dict) else str(lv)
         note = lv.get("note", "") if isinstance(lv, dict) else ""
         els.append(rect(int(x), int(y), int(w), int(band_h), color, shape="roundRect"))
-        els.append(txt(label, int(x), int(y), int(w), int(band_h), 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
         if note:
-            els.append(txt(note, int(x), int(y + band_h + 1), int(w), 16, 11, pal["muted"], align="center", font=pal["font"]))
+            els.append(txt(label, int(x), int(y + band_h / 2 - 25), int(w), 28, 18, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+            els.append(txt(note, int(x) + 20, int(y + band_h / 2 + 5), int(w) - 40, 22, 12, "#EAF2FF", align="center", valign="middle", font=pal["font"]))
+        else:
+            els.append(txt(label, int(x), int(y), int(w), int(band_h), 18, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
     return _slide(els, remark=spec.get("notes"))
 
 

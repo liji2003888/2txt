@@ -105,6 +105,7 @@ To put a real, still-editable template cover in front of a generated deck:
 ### 4. Always run visual QA after generation
 
 - `python scripts/render_inspect.py <file.pptx> [out_dir]` renders each slide to PNG via LibreOffice + pdftoppm.
+- **No LibreOffice?** `node scripts/preview.js <deck.json> <slideIndex> <out.png>` rasterizes one slide to PNG via resvg-js (embeds images/icons; CJK needs an installed CJK font). Fast layout/overlap check that works in any sandbox.
 - If the agent model has vision, open the PNGs and check: text overflow, element overlap, color/font deviation, missing CJK glyphs, then iterate. If the model has no vision, this step is manual (or skipped) — generation/validation does not depend on it.
 
 ## Schema essentials
