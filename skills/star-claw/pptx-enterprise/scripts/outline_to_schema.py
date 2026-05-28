@@ -5,7 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, chrome_elements, banner_elements
+from layouts import LAYOUTS, CONTENT_LAYOUTS, palette, footer, chrome_elements, banner_elements, header
+from compose import compose_slide
 
 ROOT = Path(__file__).resolve().parent.parent
 CANVAS_W, CANVAS_H = 960, 540
@@ -142,14 +143,28 @@ def build(outline: dict, theme: dict) -> dict:
     page = 0
     for spec in specs:
         layout = spec.get("layout", "bullets")
-        fn = LAYOUTS.get(layout, LAYOUTS["bullets"])
-        try:
-            slide = fn(spec, pal)
-        except Exception as exc:  # one malformed slide must not abort the whole deck
-            print(f"warning: layout '{layout}' failed ({exc}); falling back to bullets", file=sys.stderr)
-            fallback = {"title": spec.get("title", ""), "points": spec.get("points") or spec.get("bullets") or spec.get("items") or []}
-            slide = LAYOUTS["bullets"](fallback, pal)
-            layout = "bullets"
+        # Auto-layout path: a slide with a "body" tree is composed by the layout engine.
+        if spec.get("body") is not None:
+            content_bottom = 474 if spec.get("banner") else 500
+            els = list(header(spec.get("title", ""), pal)) if spec.get("title") else []
+            try:
+                els += compose_slide(spec, pal, (60, 120, 900, content_bottom))
+                slide = {"id": __import__("uuid").uuid4().hex[:10], "elements": els}
+            except Exception as exc:
+                print(f"warning: compose failed ({exc}); falling back to bullets", file=sys.stderr)
+                slide = LAYOUTS["bullets"]({"title": spec.get("title", ""), "points": []}, pal)
+                layout = "bullets"
+            else:
+                layout = "auto"
+        else:
+            fn = LAYOUTS.get(layout, LAYOUTS["bullets"])
+            try:
+                slide = fn(spec, pal)
+            except Exception as exc:  # one malformed slide must not abort the whole deck
+                print(f"warning: layout '{layout}' failed ({exc}); falling back to bullets", file=sys.stderr)
+                fallback = {"title": spec.get("title", ""), "points": spec.get("points") or spec.get("bullets") or spec.get("items") or []}
+                slide = LAYOUTS["bullets"](fallback, pal)
+                layout = "bullets"
         slide.setdefault("background", {"type": "solid", "color": pal["bg"]})
         # role drives the template renderer's master-layout choice; full=full-bleed colored slide
         if layout == "cover":

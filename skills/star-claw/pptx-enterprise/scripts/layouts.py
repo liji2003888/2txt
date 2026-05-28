@@ -940,6 +940,7 @@ LAYOUTS = {
 }
 
 CONTENT_LAYOUTS = {
+    "auto",
     "bullets", "agenda", "two_column", "cards", "kpi", "chart", "comparison",
     "process", "flow", "chevron", "hub", "dashboard", "architecture", "house",
     "cases", "solution", "roadmap", "gantt",

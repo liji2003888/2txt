@@ -11,6 +11,25 @@ A Skill for enterprise PPT generation. The Slide JSON Schema (`schema/slide_sche
 
 This skill contains **no LLM calls** — every script is plain Python/Node. It works with any agent model (Qwen, DeepSeek, Claude, …); the model only needs to (1) write a small JSON outline or edit-ops file following the examples here, and (2) run the commands below. The outline parser is forgiving (missing fields default; a malformed slide falls back to a bullet slide instead of aborting), and `scripts/validate.py` reports any schema problem before rendering. Prefer copying the templates in `assets/examples/` and editing values, rather than composing JSON from scratch.
 
+## Authoring slides: prefer the auto-layout engine (compose a tree)
+
+**To get designed, non-templated slides, author each slide as a layout TREE — do not just pick a fixed template.** A slide with a `"body"` tree is flowed by the auto-layout engine (`compose.py`): you decide the *structure*, the engine computes geometry (flexbox-style) so nothing overlaps and it adapts to the content. This is how to make decks that look bespoke rather than mechanical.
+
+```json
+{ "title": "页面标题", "banner": "可选底部金句",
+  "body": { "type": "row", "gap": 20, "items": [ ...nodes... ] } }
+```
+
+Containers: `row` / `col` / `grid` (`gap`, `sizes` weights for row, `cols` for grid) — nest freely.
+Components: `card` (`title`/`body`/`icon`/`metric`/`tag`/`tone:light|blue|navy`/`accent`), `stat` (`value`/`label`/`note`), `panel` (`title`/`tone`/`items:[...]`), `iconitem` (`icon`/`title`/`body`), `bullets` (`items`), `text` (`text`/`size`/`bold`/`align`), `chart` (`chartType`/`labels`/`series`), `image` (`src`), `spacer`.
+
+Design guidance:
+- Vary structure per slide to fit the content — a comparison is two `panel`s in a `row`; a dashboard is a `col` of a stat `row` + a chart `row` (`sizes:[2,1]`); a feature set is a `grid`. Don't reuse the same shape every slide.
+- Accent colors rotate across sibling items automatically (tech-blue series); set `"accent":"red"` on the one key node only.
+- Icons are white on colored chips, never black. Keep card bodies short; the engine prevents overlap but concise text reads better.
+
+The fixed-template layouts below (`cards`, `process`, `kpi`, …) still work as quick presets and as examples of good composition, but the **tree is the primary, more flexible path**.
+
 ## When to use which path
 
 Choose by input:
