@@ -95,6 +95,7 @@ for (const slide of deck.slides) {
         roundRect: pres.ShapeType.roundRect,
         ellipse: pres.ShapeType.ellipse,
         triangle: pres.ShapeType.triangle,
+        trapezoid: pres.ShapeType.trapezoid,
         diamond: pres.ShapeType.diamond,
         arrow: pres.ShapeType.rightArrow,
         star: pres.ShapeType.star5,

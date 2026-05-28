@@ -32,6 +32,7 @@ def palette(theme: dict) -> dict:
         "cover": theme.get("coverImage"),
         "coverDeco": theme.get("coverDeco"),
         "coverWordmark": theme.get("coverWordmark"),
+        "master": bool(theme.get("baseTemplate")),
     }
 
 
@@ -528,47 +529,119 @@ def pyramid_layout(spec, pal):
 
 
 def cover_layout(spec, pal):
-    red = pal["red"]
-    p = _asset(pal.get("cover"))
+    # Master mode: the '空白' master layout provides the cover background (red shape + building +
+    # deco). We overlay ONLY the editable fields + the small white wordmark. No image-based cover.
     els = []
-    if p:
-        # Clean cover background image (red shape + photo); overlay only the editable fields.
-        # bg/deco tagged role='coverbg' so the template renderer skips them (the '空白' master layout provides them).
-        els.append({"id": new_id(), "type": "image", "src": p, "left": 0, "top": 0, "width": W, "height": H, "role": "coverbg"})
-        deco = _asset(pal.get("coverDeco"))
-        if deco:
-            els.append({"id": new_id(), "type": "image", "src": deco, "left": 746, "top": 5, "width": 197, "height": 161, "fixedRatio": True, "role": "coverbg"})
-        wm = _asset(pal.get("coverWordmark"))
-        if wm:
-            els.append({"id": new_id(), "type": "image", "src": wm, "left": 29, "top": 140, "width": 302, "height": 49, "fixedRatio": True})
-        meta = spec.get("meta")
-        if meta is None:
-            meta = [
-                "文档编号：              保存年限：    年",
-                "保密等级：□一般   ■秘密   □机密   □绝密",
-                "报告归档：□DCC   □部门内   □中心内",
-            ]
-        if isinstance(meta, str):
-            meta = [meta]
-        for i, line in enumerate(meta):
-            els.append(txt(line, 27, 18 + i * 18, 470, 18, 10, "#FFFFFF", font=pal["font"]))
-        els.append(txt(spec.get("title", "材料标题"), 27, 218, 470, 70, 36, "#FFFFFF", font=pal["font"]))
-        if spec.get("dept"):
-            els.append(txt(spec["dept"], 32, 343, 440, 28, 20, "#FFFFFF", font=pal["font"]))
-        if spec.get("author"):
-            els.append(txt(spec["author"], 32, 373, 440, 28, 20, "#FFFFFF", font=pal["font"]))
-        return _slide(els)
-    # Fallback (no cover image yet): approximate TCL red cover — lacks the building photo.
-    els.append(rect(0, 0, 560, H, red))
-    if spec.get("meta"):
-        els.append(txt(spec["meta"], 48, 38, 500, 24, 11, "#FFFFFF", font=pal["font"]))
-    els.append(txt(spec.get("brand", "TCL 华星"), 48, 150, 480, 80, 46, "#FFFFFF", bold=True, font=pal["font"]))
-    els.append(txt(spec.get("title", "材料标题"), 48, 258, 480, 70, 34, "#FFFFFF", bold=True, font=pal["font"]))
+    wm = _asset(pal.get("coverWordmark"))
+    if wm:
+        els.append({"id": new_id(), "type": "image", "src": wm, "left": 29, "top": 140, "width": 302, "height": 49, "fixedRatio": True})
+    meta = spec.get("meta")
+    if meta is None:
+        meta = [
+            "文档编号：              保存年限：    年",
+            "保密等级：□一般   ■秘密   □机密   □绝密",
+            "报告归档：□DCC   □部门内   □中心内",
+        ]
+    if isinstance(meta, str):
+        meta = [meta]
+    for i, line in enumerate(meta):
+        els.append(txt(line, 27, 18 + i * 18, 470, 18, 10, "#FFFFFF", font=pal["font"]))
+    els.append(txt(spec.get("title", "材料标题"), 27, 218, 470, 70, 36, "#FFFFFF", font=pal["font"]))
     if spec.get("dept"):
-        els.append(txt(spec["dept"], 48, 404, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+        els.append(txt(spec["dept"], 32, 343, 440, 28, 20, "#FFFFFF", font=pal["font"]))
     if spec.get("author"):
-        els.append(txt(spec["author"], 48, 446, 420, 34, 20, "#FFFFFF", font=pal["font"]))
+        els.append(txt(spec["author"], 32, 373, 440, 28, 20, "#FFFFFF", font=pal["font"]))
     return _slide(els)
+
+
+def flow_layout(spec, pal):
+    """流程图: rounded-rect nodes in a row connected by arrows (optionally with sub text)."""
+    els = header(spec.get("title", ""), pal)
+    nodes = spec.get("nodes", [])
+    n = max(1, len(nodes))
+    arrow = 30
+    total_gap = arrow * (n - 1)
+    nw = (W - 2 * MARGIN - total_gap) / n
+    cy, nh = 232, 96
+    for i, nd in enumerate(nodes):
+        x = MARGIN + i * (nw + arrow)
+        color = pal["accents"][i % len(pal["accents"])]
+        title = nd.get("title", "") if isinstance(nd, dict) else str(nd)
+        body = nd.get("body", "") if isinstance(nd, dict) else ""
+        els.append(rect(int(x), cy, int(nw), nh, color, shape="roundRect"))
+        els.append(txt(title, int(x) + 8, cy + (16 if body else 0), int(nw) - 16, nh - (40 if body else 0), 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        if body:
+            els.append(txt(body, int(x) + 10, cy + 52, int(nw) - 20, 36, 11, "#EAF2FF", align="center", valign="middle", font=pal["font"]))
+        if i < n - 1:
+            ax = x + nw
+            els.append(txt("➜", int(ax), cy, int(arrow), nh, 20, pal["muted"], align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def architecture_layout(spec, pal):
+    """技术架构图: stacked horizontal layers, each = a colored label + a row of module chips."""
+    els = header(spec.get("title", ""), pal)
+    layers = spec.get("layers", [])
+    n = max(1, len(layers))
+    top, bottom, gap = 124, 500, 12
+    lh = (bottom - top - (n - 1) * gap) / n
+    label_w = 150
+    for i, ly in enumerate(layers):
+        y = top + i * (lh + gap)
+        color = pal["accents"][i % len(pal["accents"])]
+        name = ly.get("name", "") if isinstance(ly, dict) else str(ly)
+        items = ly.get("items", []) if isinstance(ly, dict) else []
+        els.append(rect(MARGIN, int(y), W - 2 * MARGIN, int(lh), pal["light"], shape="roundRect"))
+        els.append(rect(MARGIN, int(y), label_w, int(lh), color, shape="roundRect"))
+        els.append(txt(name, MARGIN, int(y), label_w, int(lh), 15, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        m = max(1, len(items))
+        area_x = MARGIN + label_w + 16
+        area_w = (W - MARGIN) - area_x - 8
+        cgap = 10
+        cw = (area_w - (m - 1) * cgap) / m
+        ch = lh - 20
+        for j, it in enumerate(items):
+            cx = area_x + j * (cw + cgap)
+            els.append(rect(int(cx), int(y + 10), int(cw), int(ch), "#FFFFFF", shape="roundRect", outline={"color": color, "width": 1}))
+            els.append(txt(str(it), int(cx) + 4, int(y + 10), int(cw) - 8, int(ch), 12.5, pal["ink"], align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
+
+
+def house_layout(spec, pal):
+    """战略房子架构图: roof (goal) + pillars (strategies) + foundation (enablers)."""
+    els = header(spec.get("title", ""), pal)
+    primary = pal["accents"][0]
+    base_c = pal["accents"][1]
+    # roof (trapezoid: narrower at top, like a house roof) with the goal text inside
+    roof = spec.get("roof", "")
+    els.append({"id": new_id(), "type": "shape", "shapeType": "trapezoid", "left": MARGIN, "top": 120,
+                "width": W - 2 * MARGIN, "height": 60, "fill": primary})
+    if roof:
+        els.append(txt(roof, MARGIN + 40, 134, W - 2 * MARGIN - 80, 34, 17, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    # pillars
+    pillars = spec.get("pillars", [])
+    n = max(1, len(pillars))
+    py, ph = 192, 252
+    gap = 14
+    pw = (W - 2 * MARGIN - (n - 1) * gap) / n
+    for i, pil in enumerate(pillars):
+        x = MARGIN + i * (pw + gap)
+        color = pal["accents"][i % len(pal["accents"])]
+        title = pil.get("title", "") if isinstance(pil, dict) else str(pil)
+        items = pil.get("items", []) if isinstance(pil, dict) else []
+        els.append(rect(int(x), py, int(pw), ph, pal["light"], shape="roundRect"))
+        els.append(rect(int(x), py, int(pw), 40, color, shape="roundRect"))
+        els.append(txt(title, int(x), py, int(pw), 40, 14, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        for j, it in enumerate(items[:6]):
+            iy = py + 52 + j * 32
+            els.append(txt("· " + str(it), int(x) + 12, iy, int(pw) - 20, 28, 12, pal["ink"], valign="middle", font=pal["font"]))
+    # foundation
+    base = spec.get("base", "")
+    if isinstance(base, list):
+        base = "   ·   ".join(base)
+    els.append(rect(MARGIN, 460, W - 2 * MARGIN, 40, base_c, shape="roundRect"))
+    els.append(txt(base, MARGIN, 460, W - 2 * MARGIN, 40, 14, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+    return _slide(els, remark=spec.get("notes"))
 
 
 LAYOUTS = {
@@ -583,6 +656,9 @@ LAYOUTS = {
     "chart": chart_layout,
     "comparison": comparison_layout,
     "process": process_layout,
+    "flow": flow_layout,
+    "architecture": architecture_layout,
+    "house": house_layout,
     "timeline": timeline_layout,
     "matrix": matrix_layout,
     "hierarchy": hierarchy_layout,
@@ -597,5 +673,6 @@ LAYOUTS = {
 
 CONTENT_LAYOUTS = {
     "bullets", "agenda", "two_column", "cards", "kpi", "chart", "comparison",
-    "process", "timeline", "matrix", "hierarchy", "circles", "pyramid", "table", "image_text",
+    "process", "flow", "architecture", "house",
+    "timeline", "matrix", "hierarchy", "circles", "pyramid", "table", "image_text",
 }

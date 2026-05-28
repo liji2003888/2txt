@@ -51,6 +51,8 @@ for (const el of slide.elements || []) {
   if (el.type === 'shape') {
     const fill = el.fill || '#CCCCCC';
     if (el.shapeType === 'ellipse') svg += `<ellipse cx="${x + w / 2}" cy="${y + h / 2}" rx="${w / 2}" ry="${h / 2}" fill="${fill}"/>`;
+    else if (el.shapeType === 'triangle') svg += `<polygon points="${x + w / 2},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"/>`;
+    else if (el.shapeType === 'trapezoid') { const inset = w * 0.18; svg += `<polygon points="${x + inset},${y} ${x + w - inset},${y} ${x + w},${y + h} ${x},${y + h}" fill="${fill}"/>`; }
     else svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${el.shapeType === 'roundRect' ? 8 : 0}" fill="${fill}"/>`;
   } else if (el.type === 'line') {
     const x1 = x + ((el.start && el.start[0]) || 0), y1 = y + ((el.start && el.start[1]) || 0);

@@ -45,6 +45,49 @@ def resolve_icons(deck: dict) -> None:
         slide["elements"] = [e for e in slide["elements"] if not e.get("_drop")]
 
 
+def resolve_charts(deck: dict) -> None:
+    """Render chart elements to PNG (SVG+resvg) and replace them with image elements,
+    so business charts embed on the master/python-pptx path too."""
+    import hashlib
+    theme = deck.get("meta", {}).get("theme") or {}
+    font = theme.get("fontName") or "sans-serif"
+    todo, refs = [], []
+    for slide in deck["slides"]:
+        for el in slide["elements"]:
+            if el.get("type") != "chart":
+                continue
+            spec = {
+                "type": el.get("chartType", "column"),
+                "labels": (el.get("data") or {}).get("labels", []),
+                "series": (el.get("data") or {}).get("series", []),
+                "colors": el.get("themeColors"),
+                "width": int(el.get("width", 840)),
+                "height": int(el.get("height", 350)),
+                "font": font,
+            }
+            key = hashlib.md5(json.dumps(spec, ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:12]
+            out = ICON_CACHE / f"chart_{key}.png"
+            spec["out"] = str(out)
+            todo.append(spec)
+            refs.append((el, out))
+    if not refs:
+        return
+    ICON_CACHE.mkdir(parents=True, exist_ok=True)
+    pending = [s for s in todo if not Path(s["out"]).exists()]
+    if pending:
+        mf = ICON_CACHE / "_charts.json"
+        mf.write_text(json.dumps(pending, ensure_ascii=False), encoding="utf-8")
+        r = subprocess.run(["node", str(ROOT / "scripts" / "chart_img.js"), str(mf)], capture_output=True, text=True)
+        if r.returncode != 0:
+            print(r.stdout + r.stderr, file=sys.stderr)
+    for el, out in refs:
+        if out.exists():
+            for k in ("chartType", "data", "themeColors"):
+                el.pop(k, None)
+            el["type"] = "image"
+            el["src"] = str(out)
+
+
 def build(outline: dict, theme: dict) -> dict:
     pal = palette(theme)
     specs = outline.get("slides", [])
@@ -86,6 +129,7 @@ def build(outline: dict, theme: dict) -> dict:
         },
         "slides": slides,
     }
+    resolve_charts(deck)
     resolve_icons(deck)
     return deck
 

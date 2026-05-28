@@ -1,19 +1,17 @@
 {
   "brand": "TCL 飞书 / 星Claw",
   "fontName": "微软雅黑",
-  "fontColor": "#1A2332",
+  "fontColor": "#111111",
   "backgroundColor": "#FFFFFF",
   "muted": "#5C6B7D",
-  "light": "#F7F9FC",
-  "panel": "#E8F1FB",
-  "line": "#CCE0FF",
+  "light": "#F2F6FC",
+  "panel": "#E6F0FB",
+  "line": "#D5E3F5",
   "logo": "assets/tcl_logo.png",
   "badgeColor": "#E60012",
-  "coverImage": "assets/csot_cover.png",
-  "coverDeco": "assets/csot_cover_deco.png",
   "coverWordmark": "assets/csot_cover_wordmark.png",
   "baseTemplate": "assets/csot_master.pptx",
   "contentLayout": "标题幻灯片",
   "coverLayout": "空白",
-  "themeColors": ["#2563EB", "#0168CF", "#00B0EF", "#FABE0E", "#E60012", "#5C6B7D"]
+  "themeColors": ["#1677FF", "#111111", "#E60012", "#1677FF", "#111111", "#E60012"]
 }

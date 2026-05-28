@@ -24,6 +24,7 @@ SHAPE_MAP = {
     "roundRect": MSO_SHAPE.ROUNDED_RECTANGLE,
     "ellipse": MSO_SHAPE.OVAL,
     "triangle": MSO_SHAPE.ISOSCELES_TRIANGLE,
+    "trapezoid": MSO_SHAPE.TRAPEZOID,
     "diamond": MSO_SHAPE.DIAMOND,
     "arrow": MSO_SHAPE.RIGHT_ARROW,
     "star": MSO_SHAPE.STAR_5_POINT,
