@@ -1,11 +1,11 @@
 ---
 name: pptx-enterprise
-description: Generate enterprise-grade presentations (TCL brand) as .pptx and HTML, driven by a single Slide JSON Schema. Routes between PptxGenJS (from-scratch), python-pptx (brand-fidelity template fill), and a forked PPTist renderer (Web/online edit).
+description: Generate enterprise-grade presentations (TCL brand) as editable .pptx. Work in two phases like Kimi/Claude — first design the full written content (outline → per-section detail → per-page concrete text/data + layout), then render via PptxGenJS. Also edits existing .pptx and fills branded templates.
 ---
 
 # pptx-enterprise
 
-A Skill for enterprise PPT generation. The Slide JSON Schema (`schema/slide_schema.json`) is the single source of truth; renderers project it to `.pptx` and HTML, and a separate path fills branded `.potx` templates in place for pixel-perfect brand fidelity.
+A Skill for enterprise PPT generation. **Content logic first, layout last.** The model writes a per-page content+layout plan, expressed as a Slide JSON layout-tree; the auto-layout engine + PptxGenJS render it to an editable `.pptx`. A separate path fills/edits branded templates for pixel-perfect fidelity.
 
 ## Model-agnostic
 
@@ -13,27 +13,26 @@ This skill contains **no LLM calls** — every script is plain Python/Node. It w
 
 > **范例只是参考,不是模板。** `assets/examples/` 里的 deck 用来传达「叙事骨架 + 组合手法 + 质量基线」,**不要照抄**。每次都要针对真实主题、目标、受众和检索到的内容,**自己设计**这份片子:重新组织结构、自拟结论句、按本次内容选版式与组件、调整配比。范例是起跳板,模型的设计能力才是主体 —— 内容、构图、版式组合都应是为这次需求量身做的,而非填空。
 
-## 制作流程总纲 (Production pipeline — follow in order)
+## 制作流程:先内容,后排版(两阶段,像 Kimi/Claude)
 
-Approach every deck like a senior solution/presentation consultant: **content logic first, layout last.** Don't open the engine until you know what each slide must say. The pipeline:
+**铁律:内容逻辑完整 > 样式多样。** 先把"要讲什么"想全、写实,再渲染。两个最常见的失败都要避免:① 内容稀薄的"骨架页"(只有标题 + 几个名词 + 大片留白);② 为凑版式多样,把一个本该展开 2–4 页的章节硬压成一页。
 
-**① 立意 (Frame the goal).** Pin down: 主题、目标(看完要让受众相信什么/做什么)、受众(懂行还是外行)、场景(汇报/培训/对外…)、篇幅、材料类型. Write the deck's **single governing message** in one sentence — every slide must serve it. Map the material type to a narrative framework (see *Material frameworks* below: 培训/汇报/方案/复盘/产品/战略).
+### 阶段一 · 内容设计(纯文字,先不碰渲染引擎)
 
-**② 搭故事线 (Build the storyline — text only, no layout yet).**
-- *If the user gave an outline or source material*: use it; fix gaps and ordering so the logic is MECE, 总分, and 结论先行.
-- *If not*: **you design the outline.** Reason from goal+audience+framework about what sections it should contain and what question each section answers. Produce a slide-by-slide list where **each slide has one takeaway sentence** (the future title). Sanity-check the spine: one through-line, each section a sub-conclusion, the `agenda` mirrors the sections.
+1. **立意**:确定 主题 / 目标(看完让受众相信什么、做什么)/ 受众 / 场景 / 篇幅 / 材料类型;一句话写出**全篇唯一主张**。按材料类型选叙事框架(见 *Material frameworks*)。
+2. **详细大纲**:列出章节 → 每章要回答的核心问题 → **每章预计几页**。**一个章节通常 2–5 页,不是只能一页** —— 该展开就展开(现状一页讲背景、一页讲痛点数据;方案一页总览、几页拆解关键模块)。`agenda` 镜像章节。
+3. **检索补料(web_search)**:逐条标注 *已知可直接写* vs *需检索*;对后者用 OpenClaw `web_search` 取**真实事实/最新数据/实名案例/定义**,并**总结成可上页的句子和数字**;搜并下载**关键图片**(架构图/截图/产品图)经 `image`/`imagecard` 用上。多源核实,**绝不编造数据**。
+4. **逐页内容稿(关键产物)**:为**每一页**写出**真实、完整的内容** —— 标题(结论句)+ 这一页实际要呈现的要点/短段落/数据/示例(**写出真句子,不是占位词**)+ 标注该页用什么版式/组件。内容要"讲透";宁可多开一页,也不要半页空白或一堆光秃秃的名词。
 
-**③ 找素材 (Research with web_search).** Go through the storyline and mark each point as *已知可直接写* vs *需检索*. For the latter, invoke the OpenClaw **`web_search` skill** to fetch accurate facts, current data/statistics, real named examples, definitions, and the conventional structure for that topic; **summarize the results into slide-ready content** (concrete numbers, named cases — not vague claims). Also search & download **key images** (diagrams, screenshots, product/photos) to use via `image`/`imagecard`. Verify across sources; **never fabricate data** — if unverifiable, drop it or flag it.
+> **阶段一自检(过不了不进阶段二)**:通读逐页内容稿——逻辑是否完整闭环?有没有"骨架页"(只有标题+几个名词)?信息密度是否对得起一页 A4?有问题就补内容或合并。
 
-**④ 定稿内容结构 (Lock the structure).** Fold the research back in; finalize section order and each slide's takeaway. For every slide decide its content load: **标题(结论)+ 主证据(数据/例子/图)+ 小结(banner)**. Cut anything that doesn't serve the governing message; split overloaded slides.
+### 阶段二 · 渲染出片(PptxGenJS)
 
-**⑤ 逐页布局 (Compose each slide).** For each slide: pick structure from the **content-shape map** (not default cards) → compose **2–3 elements into one point** (see *Compose each slide as ONE point*) → write copy **通俗易懂** → mark at most one key node red. Keep deck-wide **variety** (no repeat on consecutive slides; ≥6–10 distinct structures; cards ≤⅓).
+5. **逐页排版**:把内容稿翻成布局树 JSON —— 按 **content-shape map** 选版式、把元素**组合成一个论点**、**通俗易懂**改写文案、至多一个红色关键点。
+6. **渲染**:`node scripts/schema_to_pptx.js deck.json out.pptx`(默认,原生可编辑)。
+7. **QA bug-hunt + 终审**:见 *QA is a bug hunt*。修完复验,再对照唯一主张终审(每页是否推进主张、结论是否清晰、汇报类 ask 是否明确)。
 
-**⑥ 自检与出片 (QA & render).** Render with **`node scripts/schema_to_pptx.js` (default, editable)**, then run QA as a **bug hunt** (see *QA is a bug hunt* below): variety (`lint_variety` → `VARIETY OK`), schema (`validate.py`), content (extract text + grep for placeholder/filler), and visual (`preview_all.py` → inspect every slide against the checklist, ideally with a fresh-eyes subagent). Fix and re-verify until a clean pass — first render is never perfect.
-
-**⑦ 终审 (Review against the goal).** Re-read against ① — does every slide advance the governing message? Is the conclusion unmistakable and (for reports) the ask explicit? Trim, then deliver.
-
-Detailed rules for each phase are below.
+各阶段细则见下文。
 
 ## Authoring slides: prefer the auto-layout engine (compose a tree)
 
@@ -81,21 +80,20 @@ If the material doesn't match these, build a custom spine but keep the disciplin
 
 Reference decks (one per material type) live in `assets/examples/` — `training_deck` / `report_deck` / `solution_deck` / `review_deck` / `product_deck` / `strategy_deck`. Read the matching one to absorb its spine and composition quality, **then design your own** for the real content (see the "范例只是参考" note above).
 
-### Compose each slide as ONE point, not a bare component
+### Each page = one clear message, fully fleshed out (never sparse)
 
-A slide is an argument, not a widget. **Never output a slide whose body is a single bare component** (one lone chart, one lone card grid, one lone bullet list). Every content slide combines **2–3 elements** arranged as:
+A slide is an argument, not a widget. Two rules:
 
-> **【论点标题】** (the title states the conclusion, not the topic) + **【主视觉】** (the structure that proves it) + **【支撑/结论】** (a short takeaway, callouts, or context).
+1. **填满,别留白.** Never ship a thin "skeleton" page (a title + 3–4 lone words + huge empty space). Every content slide combines **2–3 elements** and carries real substance: **【论点标题(结论句)】 + 【主视觉(证明它的结构)】 + 【支撑/数据/示例 + 小结 banner】**. If a topic deserves depth, **give it more pages** — don't compress it into one bare page.
+2. **不要裸组件.** Don't output a body that's a single lone chart / lone card grid / lone bullet list — combine it with context (callouts, a framing line, a takeaway banner).
 
 Composition recipes (combine, don't isolate):
-- **数据页**: `chart` + 2–3 `stat`/`hero` callouts beside it (`row` `sizes:[2,1]`) + a one-line `banner` takeaway. Not a chart alone.
-- **结论页**: `hero`/`statement` (the claim) + `bullets` of 3 reasons beside or below it.
-- **流程/架构页**: the `arrowflow`/`orgchart`/`architecture` diagram + a `banner` saying what it means ("所以…").
-- **对比页**: `balance`/`comparison` + a verdict line (`banner` or a short `text`).
-- **要点页**: a `grid` of cards/iconitems, **but** lead with a 1-line framing `text` above and close with a `banner` — so it argues, not just lists.
-- Use `sizes` for asymmetry (`[2,1]`, `[3,2]`), mix a left structure with a right support column. Title should be a sentence ("AI 不取代人,但放大人"), not a label ("AI 介绍").
-
-Every slide must answer: *what's the ONE takeaway?* Put it in the title or the banner.
+- **数据页**: `chart` + 2–3 `stat`/`hero` callouts (`row` `sizes:[2,1]`) + a `banner` takeaway.
+- **结论页**: `hero`/`quote` claim + `bullets` of 3 reasons beside/below.
+- **流程/架构页**: the `arrowflow`/`orgchart`/`architecture` diagram + a `banner` saying what it means.
+- **对比页**: `balance`/two `panel`s + a verdict line.
+- **要点页**: a `grid` of cards/iconitems, **with** a 1-line framing `text` above + a `banner` below — so it argues, not just lists.
+- Use `sizes` for asymmetry (`[2,1]`, `[3,2]`). Titles are sentences ("AI 不取代人,但放大人"), not labels ("AI 介绍").
 
 ### Write it 通俗易懂 (plain language)
 
@@ -126,18 +124,16 @@ The #1 failure mode is **every slide becoming a card/grid** → a monotonous "AI
 | A testimonial / voice | `personcard` |
 | A funnel / conversion | `funnel` |
 
-### Hard variety rules (self-check before finishing)
+### Variety — secondary to content, but avoid true monotony
 
-1. **Never use the same primary structure on two consecutive content slides.** If slide N is a card grid, slide N+1 must be something else.
-2. **For a deck of ≥10 slides, use at least 6 distinct layout/component types** as the slide's primary structure. For ~20 slides, aim for 8–10 distinct types.
-3. **Cap cards/grids at ~⅓ of content slides.** When you catch yourself writing another card grid, convert it: a "types of X" list → `arrowflow` if sequential, `quadrant` if it's 4, `orgchart` if hierarchical, `hero`+`bullets` if one matters most.
-4. **Insert focal/breather slides.** Every few dense slides, add a `statement`/`quote`/`hero` single-idea slide and a `section` divider — varies rhythm and reads less mechanical.
-5. **Vary internal composition too:** alternate `row` vs `col` roots, use `sizes` (e.g. `[2,1]`) for asymmetry, mix `panel`/`iconitem`/`stat`, not always equal-width cards.
-6. Accent colors rotate automatically (tech-blue series); set `"accent":"red"` on **one** key node per slide at most. Icons are white on chips, never black. Keep body text short.
+Content completeness comes first; variety is the tie-breaker, not a goal that overrides depth.
 
-Before returning a multi-slide deck, run **`python scripts/lint_variety.py <outline.json>`** — it classifies each slide's primary structure and FAILS if structures repeat consecutively, too few distinct types are used, or cards/grids exceed ⅓. Fix any flagged slides using the content-shape map above, then re-run until it reports `VARIETY OK`. See `assets/examples/training_deck.json` for a worked 12-slide deck where every slide uses a different structure (it passes the linter).
+- **Pick the structure that fits each page's content** (use the content-shape map). When pages genuinely differ, their structures will naturally differ.
+- **A section may span multiple pages, and adjacent pages MAY share a structure** when the content calls for it (e.g. two card grids in 核心能力). That is fine — do NOT distort content just to vary.
+- **What to actually avoid:** a whole deck that is overwhelmingly one structure (every page a card grid). Mix in `hero`/`quote`/`statement` focal pages and `section` dividers for rhythm.
+- Accent colors rotate automatically; set `"accent":"red"` on at most one key node per slide. Icons are white on chips, never black.
 
-The fixed-template layouts below (`cards`, `process`, `kpi`, …) are quick presets, but the **tree is the primary path** — and even with presets, obey the variety rules.
+`python scripts/lint_variety.py <outline.json>` flags only **true monotony** (>=6 content slides that are <4 distinct structures, or >55% cards, or one structure on >60% of slides) — it no longer penalizes multi-page sections or adjacent repeats. Examples in `assets/examples/` show the quality bar.
 
 ## When to use which path
 
@@ -152,54 +148,21 @@ Choose by input:
 
 To add or update the master: strip example slides from a branded `.pptx` (keep masters/layouts) and point `baseTemplate` at it; set `contentLayout`/`coverLayout` to the layout names (see `python scripts/dump_pptx.py` / list via python-pptx `slide_layouts`).
 
-### 1. From scratch (outline → deck)
+### 1. From scratch — the layout-tree path (primary)
 
-1. Author a **designed outline** (`outline.json`): a list of `slides`, each declaring a `layout` plus structured content. See `assets/examples/sample_outline.json`.
-2. `python scripts/outline_to_schema.py <outline.json> [branding.json] > deck.json` — dispatches each slide through the layout library (`scripts/layouts.py`), composing shapes + text + accents.
-3. `python scripts/validate.py deck.json` — validate before rendering.
-4. `node scripts/schema_to_pptx.js deck.json out.pptx` (PptxGenJS).
-5. HTML: prefer the forked PPTist renderer in `web/` (online-editable). Fallback: `node scripts/schema_to_html.js deck.json out.html` for QA preview only.
+Write the deck JSON yourself (a `title`/meta + `slides`, each a `body` tree as in *Authoring slides* above), then:
 
-For one-off, highly custom slides you may emit `deck.json` directly per `schema/slide_schema.json` instead of going through `outline_to_schema.py` — but still compose multiple elements; see the design rules below.
+```bash
+python scripts/outline_to_schema.py deck.json > out.deck.json   # resolves icons/charts/gradients + adds chrome
+python scripts/validate.py out.deck.json                        # JSON check before render
+node   scripts/schema_to_pptx.js out.deck.json out.pptx         # render (default, editable)
+```
 
-#### Layout catalog (`layouts.py`)
+`outline_to_schema.py` also accepts slides that name a fixed `layout` (e.g. `cover`/`agenda`/`section`/`closing`, plus presets like `cards`/`process`/`dashboard`/`timeline`/`matrix`/`pyramid`/`gantt`/`roadmap`/`cases` …). Use those for chrome slides and as quick presets; for content slides prefer `body` trees. Slides may also carry `"banner"` (a navy + red-cap takeaway bar) and `"notes"` (speaker notes); shapes support `"shadow": true`.
 
-`title`, `cover` (branded title page; on the TCL master the cover background comes from the `空白` master layout — overlays only `meta`/`title`/`dept`/`author` + wordmark), `agenda`, `section` (full-bleed divider), `bullets` (colored markers + head/body, **not** `<ul>` dumps), `two_column`, `cards` (feature grid), `kpi` (big-number stats), `comparison`, `process` (numbered step circles), `flow` (流程图: rounded-rect nodes + arrows), `chevron` (箭头推进: numbered chevrons + callout bubbles), `hub` (辐射图: center circle + satellite ring), `dashboard` (数据看板: KPI strip + main chart + pie/donut), `architecture` (技术架构图: stacked layers, each = colored label + module chips), `house` (战略房子: trapezoid roof + pillars + foundation), `cases` (AI应用案例: shadowed icon cards + metric badges), `solution` (解决方案: 挑战→方案→价值, arrows, middle emphasized), `roadmap` (项目时程: phase bars on a quarter axis + deliverables), `gantt` (甘特图: workstream rows × period columns with bars), `timeline` (milestones), `matrix` (capability matrix: N category columns × item lists), `hierarchy` (root box + connected tier cards), `circles` (3 overlapping concept circles + side copy), `pyramid` (stacked levels, `inverted` for funnel), `chart` (business chart — `chartType`: `column`/`bar`/`line`/`pie`/`donut`; rendered to an embedded PNG so it works on the master path too), `table` (styled, colored header), `statement` (big takeaway), `image_text` (image + copy split), `quote`, `closing`. Content layouts get an auto brand footer + page number.
+**Themes** — 2nd arg to `outline_to_schema.py`; default `assets/themes/tcl_feishu.json` (flat blue `#1668DC` + navy `#1A2332` + red key + light panels, 微软雅黑, TCL chrome). Also `ocean`/`midnight`/`mono` and `tcl_branding.json`. A theme sets `themeColors` + optional `fontColor`/`backgroundColor`/… + `logo`/`badgeColor` chrome. On brand themes every content page gets the standard header (dark-navy bold title + thin gray divider + red corner badge + logo); `cover`/`full` slides omit corner chrome.
 
-Icons inside colored/dark slots are always rendered **white** (monochrome sets `lucide`/`icon-park-outline` recolor cleanly). The accent palette is a **tech-blue series** (`#1677FF`/`#00A6F0`/`#0E5FD8`/`#4D9BFF`/`#0068B7`/`#00C2FF`) cycled across multi-item layouts; **red `#E60012` and black `#111111` are reserved for key nodes** — set `"accent":"red"` or `"accent":"black"` (or a hex) on any item in slot layouts (`cards`/`kpi`/`process`/`flow`/`chevron`/`hub`/`dashboard`) to emphasize it.
-
-#### Composition: rigorous 总分 structure
-
-Compose decks with a clear overview-then-detail (总→分) logic: open with `cover`, then an `agenda`/overview slide listing the sections (总), break each section with a `section` divider, then detail it (分) with the layout matching the content shape, and close with `statement`/`closing`. The agenda items should mirror the actual sections in order, so the first pages establish the logical skeleton before diving into specifics. Vary layouts — never repeat the same one on consecutive slides; combine diagrams + icons + charts.
-
-On brand themes (those with `badgeColor`, e.g. `tcl_feishu`) every content page renders the TCL standard header: a **dark-navy bold title at the top + a thin light-gray divider**, plus the left red corner badge and right TCL logo. The palette is flat & corporate — **blue (`#1668DC` series) + navy (`#1A2332`) + red (`#E60012`, reserved for key nodes) + light-gray panels**; comparison/contrast panels pair blue with navy.
-
-Any content slide can add a bottom **黑红组合框 banner** (key takeaway) via `"banner": "text"` or `"banner": {"text": "...", "sub": "..."}` — renders a navy bar with a red left cap and white text. The `cover`/`full` slides omit the corner chrome.
-
-Shape elements support `"shadow": true` for a soft drop shadow (rendered on the PptxGenJS path and previews); the new card-based layouts use it for a clean, lifted look. Layouts adapt to content: item/column/step/card/level counts drive spacing and sizing, and accent colors rotate. They are **starting points, not rigid templates** — see the flexibility rule below.
-
-#### Themes
-
-The 2nd arg to `outline_to_schema.py` is a theme/branding JSON. **When omitted, the default is `assets/themes/tcl_feishu.json`** — so all generations share one content palette unless explicitly overridden. Also ships `assets/tcl_branding.json` (red) and `assets/themes/{ocean,midnight,mono}.json`. A theme sets `themeColors` plus optional `fontColor`/`backgroundColor`/`muted`/`light`/`panel`/`line` (dark themes like `midnight` recolor backgrounds), and brand chrome: `logo` (right-corner image) + `badgeColor` (left-corner badge). When both are set, every light-background slide carries the same left + right corner badges, matching the TCL reference decks. Author new themes by copying one of these.
-
-#### Icons
-
-Slot-based layouts (`cards`, `process`, `hierarchy`, `circles`, `matrix`) take an optional `icon` per item, e.g. `"icon": "lucide/search"` or `"icon": "icon-park/people"`. Sets: `lucide` (~1.7k line), `icon-park-outline` (~2.6k line), `icon-park` (~2.6k multicolor). `outline_to_schema` recolors monochrome icons (white inside the colored slot), rasterizes to PNG via `scripts/icon.js` (`@resvg/resvg-js`), caches under `assets/.icon_cache/`, and embeds them. An unknown icon name is dropped gracefully (slot falls back to its number/tag). All three sets are commercial-safe (ISC/Apache-2.0). Browse names on iconify.design. Requires `@iconify-json/*` + `@resvg/resvg-js` (pulled by `npm install`).
-
-#### Design rules — DO NOT produce text dumps
-
-- A slide is a **composition**, never a title + one `<ul>`. Every content slide carries an accent header bar, a divider, and colored markers/cards/panels.
-- Vary layouts across the deck: open with `title`/`agenda`, break sections with `section`, use `cards`/`kpi`/`chart`/`comparison` for substance, close with `quote`/`closing`.
-- Keep ≤ 6 items per slide; split dense content across `two_column` or `cards`.
-- Drive all color from `assets/tcl_branding.json` `themeColors`; never hardcode.
-- Run `scripts/render_inspect.py` and read the PNGs to confirm it looks designed, not listed.
-
-#### Don't over-template (keep layouts flexible)
-
-- Layouts are composable starting points, not a fixed mold. **Vary them** — don't reuse the same layout on consecutive slides, and don't force every deck through the same sequence.
-- Adjust the content density to fit (2–6 items), and pick the layout that matches the *shape* of the content (steps→`process`, levels→`pyramid`, categories→`matrix`, concepts→`circles`).
-- For a slide that no layout fits, **compose elements directly** in `deck.json` per `schema/slide_schema.json` (shapes/text/lines/images with explicit positions). Mixing hand-composed slides with layout-generated ones is expected and encouraged.
-- Per-slide overrides are allowed: e.g. `color` on `section`/`quote`/`closing`, `inverted` on `pyramid`, `imageSide` on `image_text`, `chrome: false` to drop corner badges on a specific slide.
+**Icons** — any item's `"icon": "lucide/search"` / `"icon-park/people"` (sets: `lucide`, `icon-park-outline`, `icon-park`). Recolored to white on colored chips (never black), rasterized + cached. Unknown name drops gracefully. Browse names on iconify.design.
 
 ### 2. Fill enterprise template (.potx with placeholders) — brand-fidelity path
 

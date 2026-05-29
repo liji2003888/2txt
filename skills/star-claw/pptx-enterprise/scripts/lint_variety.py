@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Lint an OUTLINE for layout monotony — the #1 quality issue in long decks.
+"""Lint an OUTLINE for *genuine* monotony — only the real failure: a whole deck of
+near-identical slides (e.g. every page a card grid).
 
-Classifies each content slide's primary structure and checks the variety rules
-from SKILL.md: no same structure on consecutive slides, enough distinct types,
-and card/grid usage capped. Exits non-zero if a deck of >=6 content slides
-violates the rules, so it can gate generation.
+NOTE: content completeness comes first. A section legitimately spans multiple pages, and
+adjacent pages MAY share a structure when the content calls for it — that is NOT a problem.
+So this linter does NOT fail on consecutive repeats; it only flags a deck that is
+overwhelmingly one structure (true "AI-flavored" monotony).
 
 usage: lint_variety.py <outline.json>
 """
@@ -33,7 +34,6 @@ def primary_of(spec):
     if spec.get("body") is not None:
         acc = Counter()
         _leaf_types(spec["body"], acc)
-        # grid of cards reads as "cards"
         if acc.get("card", 0) >= 3 and acc.get("__grid__", 0):
             return "cards(grid)"
         acc.pop("__grid__", None)
@@ -52,33 +52,29 @@ def main():
     outline = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     slides = outline.get("slides", [])
     seq = [primary_of(s) for s in slides]
-    content = [(i, p) for i, p in enumerate(seq) if p not in CHROME]
+    content = [p for i, p in enumerate(seq) if p not in CHROME]
     n = len(content)
     print("per-slide primary structure:")
     for i, p in enumerate(seq):
         print(f"  {i + 1:>2}. {p}")
     if n < 6:
-        print(f"\n{n} content slides — variety rules apply to >=6; OK.")
+        print(f"\n{n} content slides — OK (variety check applies to >=6).")
         return
-    distinct = len(set(p for _, p in content))
-    cnt = Counter(p for _, p in content)
+    cnt = Counter(content)
+    distinct = len(cnt)
     cards = cnt.get("cards", 0) + cnt.get("cards(grid)", 0)
-    # max consecutive repeat among content slides
-    maxrun = run = 1
-    for k in range(1, len(content)):
-        run = run + 1 if content[k][1] == content[k - 1][1] else 1
-        maxrun = max(maxrun, run)
-    need = 8 if n >= 16 else 6
+    top, topn = cnt.most_common(1)[0]
     problems = []
-    if maxrun >= 2:
-        problems.append(f"same structure repeats on {maxrun} consecutive content slides (rule: never 2 in a row)")
-    if distinct < need:
-        problems.append(f"only {distinct} distinct structures across {n} content slides (need >={need})")
-    if cards > n / 3:
-        problems.append(f"cards/grids = {cards}/{n} (> 1/3 cap)")
-    print(f"\ndistinct structures: {distinct} | content slides: {n} | cards-grids: {cards} | max consecutive: {maxrun}")
+    # only TRUE monotony fails:
+    if distinct < 4:
+        problems.append(f"only {distinct} distinct structures across {n} content slides (need >=4) — too monotonous")
+    if cards > n * 0.55:
+        problems.append(f"cards/grids = {cards}/{n} (>55%) — break some into other structures")
+    if topn > n * 0.6:
+        problems.append(f"structure '{top}' used on {topn}/{n} slides (>60%) — vary where content differs")
+    print(f"\ndistinct: {distinct} | content slides: {n} | cards-grids: {cards} | most-used: {top}×{topn}")
     if problems:
-        print("\nVARIETY FAIL — redesign per SKILL.md content-shape map:")
+        print("\nMONOTONY — vary where content genuinely differs (content completeness still comes first):")
         for p in problems:
             print("  - " + p)
         sys.exit(1)
