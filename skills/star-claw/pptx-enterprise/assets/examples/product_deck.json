@@ -1,0 +1,63 @@
+{
+  "title": "星Claw 产品介绍",
+  "_note": "材料类型=产品介绍。框架=痛点→定位→核心能力→差异化→案例数据→客户之声→获取方式。每页一个结论句,结构不重样。",
+  "slides": [
+    { "layout": "cover", "meta": "产品介绍 · 对外", "title": "星Claw 智能办公助手", "dept": "五星 AI 岛", "author": "2026 产品版" },
+    { "layout": "agenda", "title": "目录", "items": ["用户痛点", "产品定位", "核心能力", "差异化", "案例与数据", "客户之声", "如何获取"] },
+
+    { "title": "每天被信息淹没,真正的工作反而没时间做",
+      "banner": "痛点不解决,再多工具也只是增加负担",
+      "body": { "type": "row", "gap": 20, "sizes": [2, 3], "items": [
+        { "type": "hero", "kicker": "一线真实写照", "value": "200+", "label": "每天要处理的群消息/邮件/会议信息" },
+        { "type": "bullets", "items": [
+          { "text": "信息分散在飞书、邮件、文档多个入口" },
+          { "text": "重复性回复、整理、跟进占去大半天" },
+          { "text": "重要事项容易漏、跟进容易断" },
+          { "text": "敏感数据不敢丢给外部 AI", "accent": "red" } ] } ] } },
+
+    { "title": "星Claw = 你的专属智能伙伴,安全地接住一切",
+      "body": { "type": "row", "gap": 24, "sizes": [3, 2], "items": [
+        { "type": "hero", "kicker": "一句话定位", "value": "智能伙伴", "label": "在飞书里,帮你感知信息、拆解任务、闭环跟进" },
+        { "type": "bullets", "items": [
+          { "text": "个人工作台:聚焦你的判断与节奏" },
+          { "text": "团队协作台:聚焦协同与可视化" },
+          { "text": "全链路 AI 支撑两个工作台" } ] } ] } },
+
+    { "title": "六大核心能力,覆盖信息处理全链路",
+      "banner": "从「接住信息」到「闭环任务」,一站搞定",
+      "body": { "type": "grid", "cols": 3, "gap": 16, "items": [
+        { "type": "card", "tone": "blue", "icon": "lucide/message-circle", "title": "消息承接", "body": "自动接住飞书/邮件" },
+        { "type": "card", "tone": "light", "icon": "lucide/list-checks", "title": "事项跟进", "body": "待办与责任人闭环" },
+        { "type": "card", "tone": "light", "icon": "lucide/file-text", "title": "纪要提炼", "body": "自动抽 AR" },
+        { "type": "card", "tone": "light", "icon": "lucide/bar-chart-3", "title": "数据问答", "body": "自然语言查经营" },
+        { "type": "card", "tone": "light", "icon": "lucide/bell", "title": "风险预警", "body": "异常实时推送" },
+        { "type": "card", "tone": "light", "icon": "lucide/sparkles", "title": "方案起草", "body": "邮件/文档生成" } ] } },
+
+    { "title": "和外部工具比,我们赢在「安全」与「贴身」",
+      "body": { "type": "balance",
+        "left": { "title": "星Claw(华星)", "items": ["数据不出网", "安全沙箱运行", "内部系统联动", "越用越懂你"] },
+        "right": { "title": "外部通用 AI", "items": ["数据出域风险", "误操作/投毒风险", "无法接内部系统", "千人一面"] } } },
+
+    { "title": "已在多个部门跑出实效",
+      "banner": "平均提效 60%+,540+ Agent 在线",
+      "body": { "type": "row", "gap": 18, "items": [
+        { "type": "stat", "value": "540+", "label": "已接入 Agent" },
+        { "type": "stat", "value": "60%+", "label": "平均提效" },
+        { "type": "stat", "value": "5000+", "label": "月活用户" },
+        { "type": "stat", "value": "92%", "label": "满意度", "accent": "red" } ] } },
+
+    { "title": "用户怎么说",
+      "body": { "type": "row", "gap": 20, "sizes": [1, 1], "items": [
+        { "type": "personcard", "name": "覃世贵", "role": "AI应用开发部", "quote": "碎片信息变成可执行任务,每天省下一小时。" },
+        { "type": "personcard", "name": "李静", "role": "财经管理部", "quote": "经营数据一句话就能查,再也不用等报表。" } ] } },
+
+    { "title": "三步即可拥有你的星Claw",
+      "banner": { "text": "今天就能开始,无需任何技术基础", "sub": "—— 五星AI岛 → 创建你的助手" },
+      "body": { "type": "arrowflow", "items": [
+        { "title": "① 进入五星AI岛", "sub": "一键登录" },
+        { "title": "② 选模板/描述需求", "sub": "定义你的助手" },
+        { "title": "③ 试跑上线", "sub": "边用边调", "accent": "red" } ] } },
+
+    { "layout": "closing", "title": "现在就来认识你的星Claw", "subtitle": "五星AI岛 · 即刻体验" }
+  ]
+}

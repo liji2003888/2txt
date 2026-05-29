@@ -1,0 +1,64 @@
+{
+  "title": "AI 办公三年战略规划",
+  "_note": "材料类型=战略规划。框架=外部洞察→机会与挑战→愿景目标→战略框架(战略屋)→关键举措→里程碑→资源与组织。每页一个结论句,结构不重样。",
+  "slides": [
+    { "layout": "cover", "meta": "战略规划 · 机密", "title": "AI 办公三年战略规划", "dept": "集团数字化委员会", "author": "2026–2028" },
+    { "layout": "agenda", "title": "规划框架", "items": ["外部洞察", "机会与挑战", "愿景与目标", "战略框架", "关键举措", "三年里程碑", "资源与组织"] },
+
+    { "title": "AI 正从「辅助工具」变成「生产力底座」",
+      "banner": "不上车的企业,三年内将被效率差距甩开",
+      "body": { "type": "row", "gap": 20, "sizes": [2, 1], "items": [
+        { "type": "chart", "chartType": "line", "labels": ["2022", "2023", "2024", "2025", "2026"], "series": [ { "name": "企业 AI 渗透率%", "values": [8, 18, 35, 55, 72] } ] },
+        { "type": "col", "gap": 12, "items": [
+          { "type": "stat", "value": "72%", "label": "2026 渗透率预估" },
+          { "type": "stat", "value": "3x", "label": "头部效率差", "accent": "red" } ] } ] } },
+
+    { "title": "窗口期就在未来两年,机会与挑战并存",
+      "body": { "type": "quadrant", "items": [
+        { "title": "机会 ✓", "items": ["办公场景刚需", "底座已成熟", "可快速复制"] },
+        { "title": "挑战 ⚠", "items": ["数据治理滞后", "人才缺口"] },
+        { "title": "外部威胁", "items": ["对手抢先", "通用工具冲击"], "accent": "red" },
+        { "title": "我方优势 ✦", "items": ["五星AI底座", "飞书高频入口"] } ] } },
+
+    { "title": "愿景:让每位员工都有一个最懂自己的 AI 伙伴",
+      "body": { "type": "row", "gap": 24, "sizes": [3, 2], "items": [
+        { "type": "hero", "kicker": "三年北极星", "value": "人均 +1 助手", "label": "全员 AI 伙伴覆盖,人效提升 30%" },
+        { "type": "bullets", "items": [
+          { "text": "人人可用:零门槛创建助手" },
+          { "text": "事事可托:高频场景全覆盖" },
+          { "text": "数据安全:核心不出网" } ] } ] } },
+
+    { "title": "战略框架:一个愿景、三大支柱、一个底座",
+      "banner": "支柱对齐愿景,底座支撑全局",
+      "body": { "type": "house",
+        "roof": "让每位员工都有最懂自己的 AI 伙伴",
+        "pillars": [
+          { "title": "提效", "items": ["消息承接", "纪要/日报", "方案起草"] },
+          { "title": "安全", "items": ["数据不出网", "沙箱运行", "脱敏审计"] },
+          { "title": "协同", "items": ["任务分派", "项目可视", "驾驶舱"] } ],
+        "base": ["五星AI技术底座", "数据", "模型", "Skills", "Agent"] } },
+
+    { "title": "关键举措:按「平台-场景-生态」三线推进",
+      "body": { "type": "orgchart",
+        "root": { "title": "AI 办公战略举措" },
+        "children": [
+          { "title": "平台线", "items": ["底座升级", "Agent 平台"] },
+          { "title": "场景线", "items": ["高频场景", "部门定制"] },
+          { "title": "数据线", "items": ["统一治理", "资产化"] },
+          { "title": "人才线", "items": ["训练营", "AI 文化"], "accent": "red" } ] } },
+
+    { "title": "三年三步走:打底 → 规模 → 引领",
+      "body": { "type": "roadmap", "phases": [
+        { "name": "2026 打底", "time": "Y1", "items": ["平台成熟", "3→8 部门"] },
+        { "name": "2027 规模", "time": "Y2", "items": ["全员覆盖", "数据资产化"] },
+        { "name": "2028 引领", "time": "Y3", "items": ["智能决策", "行业标杆"], "accent": "red" } ] } },
+
+    { "title": "资源保障:人、钱、组织三到位",
+      "body": { "type": "row", "gap": 18, "items": [
+        { "type": "stat", "value": "+50", "label": "AI 应用开发编制" },
+        { "type": "stat", "value": "专项", "label": "数据治理预算" },
+        { "type": "stat", "value": "一把手", "label": "工程牵头", "accent": "red" } ] } },
+
+    { "layout": "closing", "title": "三年之约,共建 AI 办公新范式", "subtitle": "集团数字化委员会" }
+  ]
+}

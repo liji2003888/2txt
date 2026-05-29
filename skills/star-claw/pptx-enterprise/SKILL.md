@@ -9,7 +9,9 @@ A Skill for enterprise PPT generation. The Slide JSON Schema (`schema/slide_sche
 
 ## Model-agnostic
 
-This skill contains **no LLM calls** — every script is plain Python/Node. It works with any agent model (Qwen, DeepSeek, Claude, …); the model only needs to (1) write a small JSON outline or edit-ops file following the examples here, and (2) run the commands below. The outline parser is forgiving (missing fields default; a malformed slide falls back to a bullet slide instead of aborting), and `scripts/validate.py` reports any schema problem before rendering. Prefer copying the templates in `assets/examples/` and editing values, rather than composing JSON from scratch.
+This skill contains **no LLM calls** — every script is plain Python/Node. It works with any agent model (Qwen, DeepSeek, Claude, …); the model only needs to (1) write a JSON outline/layout-tree, and (2) run the commands below. The outline parser is forgiving (missing fields default; a malformed slide falls back to a bullet slide instead of aborting), and `scripts/validate.py` reports any schema problem before rendering.
+
+> **范例只是参考,不是模板。** `assets/examples/` 里的 deck 用来传达「叙事骨架 + 组合手法 + 质量基线」,**不要照抄**。每次都要针对真实主题、目标、受众和检索到的内容,**自己设计**这份片子:重新组织结构、自拟结论句、按本次内容选版式与组件、调整配比。范例是起跳板,模型的设计能力才是主体 —— 内容、构图、版式组合都应是为这次需求量身做的,而非填空。
 
 ## 制作流程总纲 (Production pipeline — follow in order)
 
@@ -76,6 +78,8 @@ Before composing slides, fix the **narrative skeleton** for the material type. A
 `cover → 外部洞察(chart/regions) → 机会与挑战(quadrant) → 愿景目标(hero/statement) → 战略框架(house 战略屋) → 关键举措(orgchart/cards) → 里程碑(roadmap/milestone) → 资源与组织(orgchart/stat) → closing`. 黄金法则:自上而下,用战略屋串起愿景-支柱-基础,举措对齐目标。
 
 If the material doesn't match these, build a custom spine but keep the discipline: **一条主线、总分结构、每节一个小结论、首页给全局**. Mirror the chosen spine in the `agenda` slide.
+
+Reference decks (one per material type) live in `assets/examples/` — `training_deck` / `report_deck` / `solution_deck` / `review_deck` / `product_deck` / `strategy_deck`. Read the matching one to absorb its spine and composition quality, **then design your own** for the real content (see the "范例只是参考" note above).
 
 ### Compose each slide as ONE point, not a bare component
 
