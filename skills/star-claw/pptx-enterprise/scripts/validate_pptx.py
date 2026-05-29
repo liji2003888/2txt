@@ -57,12 +57,15 @@ def main():
         if rels not in names:
             continue
         import xml.etree.ElementTree as ET
+        import posixpath
         for rel in ET.fromstring(z.read(rels)):
             tgt = rel.get("Target", "")
             if rel.get("TargetMode") == "External" or tgt.startswith("http"):
                 continue
-            resolved = str(Path("ppt/slides") / tgt).replace("\\", "/")
-            resolved = re.sub(r"[^/]+/\.\./", "", resolved)
+            if tgt.startswith("/"):
+                resolved = tgt.lstrip("/")                       # absolute from package root
+            else:
+                resolved = posixpath.normpath(posixpath.join("ppt/slides", tgt))  # relative to the part
             if resolved not in names:
                 problems.append(f"{m.group(1)} → broken rel target: {tgt}")
 

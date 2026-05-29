@@ -112,7 +112,8 @@
           "properties": {
             "type": { "const": "image" },
             "src": { "type": "string" },
-            "fixedRatio": { "type": "boolean" }
+            "fixedRatio": { "type": "boolean" },
+            "sizing": { "type": "object" }
           }
         }
       ]
@@ -198,7 +199,7 @@
           "required": ["chartType", "data"],
           "properties": {
             "type": { "const": "chart" },
-            "chartType": { "enum": ["bar", "line", "pie", "area", "scatter"] },
+            "chartType": { "enum": ["column", "bar", "line", "area", "pie", "donut", "doughnut", "radar", "scatter", "gauge"] },
             "data": {
               "type": "object",
               "required": ["series"],

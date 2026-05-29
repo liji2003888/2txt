@@ -1,2 +1,5 @@
 python-pptx>=0.6.21
 jsonschema>=4.0
+Pillow>=9.0
+# optional: cleaner text extraction for content QA (extract_text.py falls back to python-pptx if absent)
+# markitdown[pptx]>=0.0.1

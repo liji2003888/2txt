@@ -154,6 +154,8 @@ def build(outline: dict, theme: dict) -> dict:
             try:
                 els += compose_slide(spec, pal, (60, 120, 900, content_bottom))
                 slide = {"id": __import__("uuid").uuid4().hex[:10], "elements": els}
+                if spec.get("notes") or spec.get("remark"):
+                    slide["remark"] = spec.get("notes") or spec.get("remark")
             except Exception as exc:
                 print(f"warning: compose failed ({exc}); falling back to bullets", file=sys.stderr)
                 slide = LAYOUTS["bullets"]({"title": spec.get("title", ""), "points": []}, pal)
