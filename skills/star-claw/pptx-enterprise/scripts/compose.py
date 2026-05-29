@@ -101,6 +101,10 @@ def measure(node, pal, w):
         return node.get("h", 240)
     if t == "orgchart":
         return node.get("h", 300)
+    if t == "architecture":
+        return node.get("h", 300)
+    if t == "house":
+        return node.get("h", 320)
     if t == "spacer":
         return node.get("h", 20)
     return 40
@@ -525,6 +529,56 @@ def _component(node, pal, x, y, w, h, els):
                 sy = cy0 + ch0 + 12 + k * 26
                 els.append(rect(int(cx) + 14, sy + 7, 6, 6, accent, shape="ellipse"))
                 els.append(txt(str(s), int(cx) + 28, sy, int(cw) - 36, 24, 12, pal["muted"], valign="middle", font=pal["font"]))
+    elif t == "architecture":
+        layers = node.get("layers", [])
+        n = max(1, len(layers))
+        gap = 12
+        lh = (h - gap * (n - 1)) / n
+        label_w = 140
+        for i, ly in enumerate(layers):
+            ly = ly if isinstance(ly, dict) else {"name": str(ly), "items": []}
+            yy = y + i * (lh + gap)
+            accent = accent_for(pal, i, ly)
+            els.append(card(x, int(yy), w, int(lh), pal["light"]))
+            els.append(rect(x, int(yy), label_w, int(lh), accent, shape="roundRect"))
+            els.append(txt(ly.get("name", ""), x, int(yy), label_w, int(lh), 14, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+            items = ly.get("items", [])
+            m = max(1, len(items))
+            ax = x + label_w + 14
+            aw = (x + w) - ax - 10
+            cgap = 10
+            cw = (aw - (m - 1) * cgap) / m
+            for j, it in enumerate(items):
+                cx = ax + j * (cw + cgap)
+                els.append(rect(int(cx), int(yy) + 10, int(cw), int(lh) - 20, "#FFFFFF", shape="roundRect", outline={"color": accent, "width": 1}))
+                els.append(txt(str(it), int(cx) + 4, int(yy) + 10, int(cw) - 8, int(lh) - 20, 12, pal["ink"], align="center", valign="middle", font=pal["font"]))
+    elif t == "house":
+        primary = pal["accents"][0]
+        roof_h = 54
+        els.append(rect(x, y, w, roof_h, primary, shape="trapezoid"))
+        if node.get("roof"):
+            els.append(txt(node["roof"], x + 40, y + 12, w - 80, 30, 16, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+        pillars = node.get("pillars", [])
+        np_ = max(1, len(pillars))
+        base_h = 38
+        py = y + roof_h + 12
+        ph = (y + h) - py - base_h - 12
+        gap = 14
+        pw = (w - gap * (np_ - 1)) / np_
+        for i, pil in enumerate(pillars):
+            pil = pil if isinstance(pil, dict) else {"title": str(pil), "items": []}
+            px = x + i * (pw + gap)
+            accent = accent_for(pal, i, pil)
+            els.append(card(int(px), int(py), int(pw), int(ph), pal["light"]))
+            els.append(rect(int(px), int(py), int(pw), 38, accent, shape="roundRect"))
+            els.append(txt(pil.get("title", ""), int(px), int(py), int(pw), 38, 14, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
+            for k, it in enumerate(pil.get("items", [])[:5]):
+                els.append(txt("· " + str(it), int(px) + 14, int(py) + 48 + k * 26, int(pw) - 22, 24, 12, pal["ink"], valign="middle", font=pal["font"]))
+        base = node.get("base", "")
+        if isinstance(base, list):
+            base = "   ·   ".join(base)
+        els.append(rect(x, y + h - base_h, w, base_h, pal["navy"], shape="roundRect"))
+        els.append(txt(base, x, y + h - base_h, w, base_h, 14, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
     # spacer: nothing
 
 

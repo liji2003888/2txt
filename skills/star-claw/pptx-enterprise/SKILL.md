@@ -47,7 +47,7 @@ Components:
 - text/containers: `text` (`text`/`size`/`bold`/`align`), `bullets` (`items`), `spacer`
 - cards & panels: `card` (`title`/`body`/`icon`/`metric`/`tag`/`tone:light|blue|navy`/`accent`), `panel` (`title`/`tone`/`items:[...]`), `iconitem` (`icon`/`title`/`body`), `imagecard` (`src`/`title`/`body`), `personcard` (`avatar`/`name`/`role`/`quote`), `quote` (`text`/`author`/`tone`)
 - numbers & emphasis: `stat` (`value`/`label`/`note`), `hero` (`kicker`/`value`/`label`)
-- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `milestone` (里程碑, alternating cards, `items:[{date,title,body}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`), `orgchart` (组织架构, `root`/`children:[{title,items}]`)
+- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `milestone` (里程碑, alternating cards, `items:[{date,title,body}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`), `orgchart` (组织架构, `root`/`children:[{title,items}]`), `architecture` (技术架构, `layers:[{name,items}]`), `house` (战略屋, `roof`/`pillars:[{title,items}]`/`base`)
 - progress & compare: `progresslist` (进度条, `items:[{label,value}]`), `pricing` (方案对比, `plans:[{name,price,items,featured}]`)
 - charts: `chart` (`chartType`: column/bar/line/area/pie/donut/radar; `labels`/`series`), `gauge` (进度环, `value`/`label`), `image` (`src`)
 

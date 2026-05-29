@@ -1,0 +1,48 @@
+{
+  "title": "Agent 平台项目复盘",
+  "_note": "材料类型=项目复盘。框架=目标vs结果→数据复盘→做对了什么→问题与根因→改进项→经验沉淀。每页一个结论句,结构不重样。",
+  "slides": [
+    { "layout": "cover", "meta": "项目复盘 · 内部", "title": "Agent 平台项目复盘", "dept": "AI 应用开发部", "author": "复盘主持:李雷 / 2026-06" },
+    { "layout": "agenda", "title": "复盘提纲", "items": ["目标 vs 结果", "数据复盘", "做对了什么", "问题与根因", "改进项", "经验沉淀"] },
+
+    { "title": "结果超预期:上线提前两周,月活翻三倍",
+      "banner": "三项目标两项超额,一项打折",
+      "body": { "type": "balance",
+        "left": { "title": "年初目标", "items": ["6 月上线", "月活 1500", "接入 5 部门"] },
+        "right": { "title": "实际结果", "items": ["5 月中上线 ✓", "月活 5000 ✓", "接入 3 部门 ✗"] } } },
+
+    { "title": "数据复盘:增长很快,但部门渗透不均",
+      "banner": "头部部门用爆了,长尾部门还没动",
+      "body": { "type": "row", "gap": 20, "sizes": [2, 1], "items": [
+        { "type": "chart", "chartType": "line", "labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "series": [ { "name": "月活(百)", "values": [3, 8, 15, 28, 42, 50] } ] },
+        { "type": "col", "gap": 12, "items": [
+          { "type": "gauge", "value": 60, "label": "部门覆盖率" },
+          { "type": "stat", "value": "3.3x", "label": "月活增长" } ] } ] } },
+
+    { "title": "做对了三件事:小步快跑、共建、找标杆",
+      "body": { "type": "grid", "cols": 3, "gap": 16, "items": [
+        { "type": "card", "tone": "blue", "icon": "lucide/rocket", "title": "MVP 先行", "body": "两周一个可用版本,快速验证" },
+        { "type": "card", "tone": "light", "icon": "lucide/handshake", "title": "和业务共建", "body": "把业务专家拉进开发圈" },
+        { "type": "card", "tone": "light", "icon": "lucide/award", "title": "树标杆场景", "body": "先做爆款,口碑自然扩散" } ] } },
+
+    { "title": "没做好的根因:不在技术,在推广与资源",
+      "banner": "技术达标,卡在组织推进",
+      "body": { "type": "quadrant", "items": [
+        { "title": "现象:长尾部门不动", "items": ["缺人引导", "不知道能干啥"] },
+        { "title": "根因", "items": ["未配专职 BP", "缺场景手册"] },
+        { "title": "现象:开发排期紧", "items": ["需求堆积", "响应变慢"], "accent": "red" },
+        { "title": "根因", "items": ["人手不足", "缺优先级机制"] } ] } },
+
+    { "title": "改进项已排期,下季度逐项闭环",
+      "body": { "type": "progresslist", "items": [
+        { "label": "配置部门 BP", "value": 40 },
+        { "label": "场景手册沉淀", "value": 30 },
+        { "label": "需求优先级机制", "value": 20 },
+        { "label": "扩充开发人手", "value": 10, "accent": "red" } ] } },
+
+    { "title": "沉淀:可复制的「三先」打法",
+      "body": { "type": "quote", "tone": "navy", "text": "先做 MVP 验证、先树标杆口碑、先和业务共建 —— 技术从来不是瓶颈,组织推进才是。", "author": "项目组复盘结论" } },
+
+    { "layout": "closing", "title": "下一个项目,继续迭代", "subtitle": "AI 应用开发部" }
+  ]
+}

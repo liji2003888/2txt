@@ -1,0 +1,72 @@
+{
+  "title": "智能制造数字化转型解决方案",
+  "_note": "材料类型=解决方案。框架=SCQA+总分:现状痛点→目标→方案总览(全景图)→关键设计→价值ROI→实施路径→风险→行动建议。每页一个结论句,结构不重样。",
+  "slides": [
+    { "layout": "cover", "meta": "对外方案 · 商密", "title": "智能制造数字化转型解决方案", "dept": "解决方案中心", "author": "v2.0 / 2026" },
+    { "layout": "agenda", "title": "方案目录", "items": ["现状与痛点", "转型目标", "方案总览", "关键能力设计", "价值与 ROI", "实施路径", "风险与保障"] },
+
+    { "title": "制造企业普遍卡在「数据孤岛 + 人工决策」",
+      "banner": "痛点不解决,产能与良率都到天花板",
+      "body": { "type": "grid", "cols": 2, "gap": 16, "items": [
+        { "type": "card", "tone": "light", "icon": "lucide/unplug", "title": "数据孤岛", "body": "设备/MES/ERP 各自为政,口径不一" },
+        { "type": "card", "tone": "light", "icon": "lucide/user-cog", "title": "依赖人工", "body": "排产、质检靠经验,波动大" },
+        { "type": "card", "tone": "light", "icon": "lucide/timer", "title": "响应慢", "body": "异常发现到处置常以小时计", "accent": "red" },
+        { "type": "card", "tone": "light", "icon": "lucide/trending-down", "title": "成本高", "body": "能耗与库存缺乏精细管控" } ] } },
+
+    { "title": "目标:三年内做到「数据驱动、智能决策」",
+      "body": { "type": "row", "gap": 24, "sizes": [2, 3], "items": [
+        { "type": "hero", "kicker": "北极星指标", "value": "OEE +15%", "label": "设备综合效率三年提升 15 个百分点" },
+        { "type": "bullets", "items": [
+          { "text": "全要素数据打通,一个口径" },
+          { "text": "关键决策由 AI 辅助甚至自动" },
+          { "text": "异常分钟级发现与闭环" },
+          { "text": "能耗/库存可量化优化" } ] } ] } },
+
+    { "title": "方案总览:四层架构,一张图看懂",
+      "banner": "数据层打底 → 平台聚能 → 应用提效 → 决策增智",
+      "body": { "type": "architecture", "layers": [
+        { "name": "决策层", "items": ["经营驾驶舱", "智能排产", "质量预测"] },
+        { "name": "应用层", "items": ["设备运维", "能耗优化", "库存协同", "良率分析"] },
+        { "name": "平台层", "items": ["IoT 接入", "数据中台", "AI 中台"] },
+        { "name": "数据层", "items": ["设备", "MES", "ERP", "质检"] } ] } },
+
+    { "title": "关键设计:让数据从采集到决策自动流动",
+      "banner": "六步闭环,每步都可量化、可追溯",
+      "body": { "type": "arrowflow", "items": [
+        { "title": "采集", "sub": "IoT 全要素" },
+        { "title": "治理", "sub": "统一口径" },
+        { "title": "建模", "sub": "数字孪生" },
+        { "title": "预测", "sub": "AI 模型" },
+        { "title": "决策", "sub": "辅助/自动" },
+        { "title": "闭环", "sub": "反哺优化" } ] } },
+
+    { "title": "价值可量化:一年回本,三年翻倍收益",
+      "banner": "保守测算,ROI 约 220%",
+      "body": { "type": "row", "gap": 18, "items": [
+        { "type": "stat", "value": "+15%", "label": "设备综合效率 OEE" },
+        { "type": "stat", "value": "-30%", "label": "非计划停机" },
+        { "type": "stat", "value": "-18%", "label": "单位能耗" },
+        { "type": "stat", "value": "220%", "label": "三年 ROI", "accent": "red" } ] } },
+
+    { "title": "实施路径:分三期,先试点再规模化",
+      "body": { "type": "roadmap", "phases": [
+        { "name": "一期 · 打底", "time": "0-6月", "items": ["数据打通", "1 条产线试点"] },
+        { "name": "二期 · 铺开", "time": "6-18月", "items": ["核心应用上线", "多产线复制"] },
+        { "name": "三期 · 增智", "time": "18-36月", "items": ["智能决策", "全厂闭环"], "accent": "red" } ] } },
+
+    { "title": "风险可控:四类风险,各有保障措施",
+      "body": { "type": "quadrant", "items": [
+        { "title": "数据安全", "items": ["核心数据不出厂", "分级脱敏"] },
+        { "title": "落地风险", "items": ["先试点验证", "小步快跑"] },
+        { "title": "组织阻力", "items": ["一把手工程", "激励对齐"] },
+        { "title": "投资风险", "items": ["分期投入", "里程碑付款"], "accent": "red" } ] } },
+
+    { "title": "建议:本季度启动一期试点,30 天见首效",
+      "banner": { "text": "底座已成熟,先在 1 条产线跑通闭环", "sub": "—— 用真实数据说话,再决定规模化" },
+      "body": { "type": "balance",
+        "left": { "title": "现在启动", "items": ["抢占转型窗口", "快速积累数据", "团队边干边学"] },
+        "right": { "title": "继续观望", "items": ["差距持续拉大", "人才更难补", "成本刚性上升"] } } },
+
+    { "layout": "closing", "title": "携手开启智能制造", "subtitle": "解决方案中心 · 期待合作" }
+  ]
+}

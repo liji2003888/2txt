@@ -1,0 +1,63 @@
+{
+  "title": "数字化转型半年度工作汇报",
+  "_note": "材料类型=工作汇报。框架=结论先行(BLUF/金字塔):先抛结论→背景→进展→数据→问题对策→下一步与资源请求。每页一个结论句,结构不重样。",
+  "slides": [
+    { "layout": "cover", "meta": "保密等级:秘密   报告归档:中心内", "title": "数字化转型半年度工作汇报", "dept": "数字化转型中心", "author": "汇报人:张明 / 2026-06" },
+    { "layout": "agenda", "title": "汇报提纲", "items": ["一句话结论", "背景与目标", "关键进展", "数据成果", "问题与对策", "下一步与资源"] },
+
+    { "title": "上半年超额完成目标,下半年需补齐数据与人才两块短板",
+      "banner": { "text": "结论先行:整体达成 108%,两个风险项已有对策", "sub": "—— 详情见后续各页" },
+      "body": { "type": "row", "gap": 24, "sizes": [2, 3], "items": [
+        { "type": "hero", "kicker": "整体目标达成", "value": "108%", "label": "12 项 KR 中 10 项达标" },
+        { "type": "bullets", "items": [
+          { "text": "✓ 核心系统上云,故障率下降 40%" },
+          { "text": "✓ 12 个业务 Agent 上线,月活 5000+" },
+          { "text": "⚠ 数据治理滞后,影响分析类应用" },
+          { "text": "⚠ 数字化人才缺口约 30 人", "accent": "red" } ] } ] } },
+
+    { "title": "目标:用一年把「人找数据」变成「数据找人」",
+      "body": { "type": "row", "gap": 20, "sizes": [1, 1], "items": [
+        { "type": "panel", "tone": "blue", "title": "年初设定的三大目标", "items": [
+          { "type": "iconitem", "icon": "lucide/cloud", "title": "系统上云", "body": "核心系统云化,弹性可扩展" },
+          { "type": "iconitem", "icon": "lucide/bot", "title": "业务智能化", "body": "高频场景 Agent 化" },
+          { "type": "iconitem", "icon": "lucide/database", "title": "数据资产化", "body": "统一口径、可自助分析" } ] },
+        { "type": "panel", "tone": "navy", "title": "上半年聚焦", "items": [
+          { "type": "iconitem", "icon": "lucide/rocket", "title": "先建能力底座", "body": "云 + Agent 平台先行" },
+          { "type": "iconitem", "icon": "lucide/users", "title": "再带业务试点", "body": "选 3 个部门打样" } ] } ] } },
+
+    { "title": "六个月,我们跑通了从底座到场景的全链路",
+      "banner": "节奏:Q1 搭底座 → Q2 铺场景,均按时交付",
+      "body": { "type": "timeline", "items": [
+        { "date": "1月", "title": "云平台立项" },
+        { "date": "2月", "title": "核心系统迁移" },
+        { "date": "3月", "title": "Agent 平台上线" },
+        { "date": "4月", "title": "3 部门试点" },
+        { "date": "5月", "title": "12 场景推广" },
+        { "date": "6月", "title": "半年复盘" } ] } },
+
+    { "title": "关键指标全面向好,效率与成本双优化",
+      "banner": "平均提效 35%,IT 运维成本下降 22%",
+      "body": { "type": "row", "gap": 20, "sizes": [3, 2], "items": [
+        { "type": "chart", "chartType": "column", "labels": ["1月", "2月", "3月", "4月", "5月", "6月"], "series": [ { "name": "Agent 月活(百)", "values": [5, 12, 20, 32, 41, 50] } ] },
+        { "type": "col", "gap": 12, "items": [
+          { "type": "stat", "value": "108%", "label": "目标达成率" },
+          { "type": "stat", "value": "-22%", "label": "IT 运维成本", "accent": "red" } ] } ] } },
+
+    { "title": "两个风险项:数据治理滞后、人才缺口",
+      "banner": "已定对策,需公司层面给资源支持",
+      "body": { "type": "quadrant", "items": [
+        { "title": "问题:数据口径不一", "items": ["分析类应用受阻", "跨部门对不齐"] },
+        { "title": "对策", "items": ["Q3 建统一指标体系", "设数据 owner 机制"] },
+        { "title": "问题:人才缺口 ~30 人", "items": ["开发排期紧张", "依赖外包风险"], "accent": "red" },
+        { "title": "对策", "items": ["内部培养 + 定向招聘", "建 AI 应用开发训练营"] } ] } },
+
+    { "title": "下半年三件事,请公司支持两项资源",
+      "banner": { "text": "目标:把达成率从 108% 推到覆盖全部门", "sub": "—— 请批:数据治理专项预算 + 30 人编制" },
+      "body": { "type": "arrowflow", "items": [
+        { "title": "补数据", "sub": "统一指标体系" },
+        { "title": "扩场景", "sub": "覆盖至 8 部门" },
+        { "title": "育人才", "sub": "训练营 + 招聘", "accent": "red" } ] } },
+
+    { "layout": "closing", "title": "谢谢,欢迎指正", "subtitle": "数字化转型中心 · 2026 上半年" }
+  ]
+}
