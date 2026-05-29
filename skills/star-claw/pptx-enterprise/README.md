@@ -29,7 +29,7 @@
 | **图标** | Lucide + IconPark 共 ~7000,**强制单色化**(永不出现黑色),按品牌色染色 |
 | **品牌** | TCL 母版 + 红角标/五环/封面 + 多主题(tcl_feishu / ocean / midnight / mono) |
 | **编辑现有 PPT** | 高层指令(改文本/表格/图表数据/换图/增删调序页)+ 任意 OOXML 深编辑(unpack/pack) |
-| **质检 QA** | 多样性 lint / JSON 校验 / **OOXML 成品校验** / 文本抽取查占位符 / 逐页出图 + 缩略图网格 |
+| **质检 QA** | **内容卡口(防空白/骨架页)** / 多样性 lint / JSON 校验 / **OOXML 成品校验** / 文本抽取查占位符 / 逐页出图(含原生图表)+ 缩略图网格 |
 | **方法论** | 制作流程总纲、6 类材料叙事框架、内容形态→版式映射、通俗易懂规则、research-first |
 
 ---
@@ -73,8 +73,9 @@ bash setup.sh        # 幂等:装系统/Python/Node 依赖并跑自检
 2. 生成 → 校验 → 出片:
 
 ```bash
-python scripts/outline_to_schema.py deck.json > out.deck.json   # 大纲→布局(自动排版/图标/图表)
+python scripts/lint_content.py deck.json                        # 内容卡口(防空白页/骨架页,必过)
 python scripts/lint_variety.py deck.json                        # 多样性自检(防千篇一律)
+python scripts/outline_to_schema.py deck.json > out.deck.json   # 大纲→布局(自动排版/图标/图表)
 node   scripts/schema_to_pptx.js out.deck.json deck.pptx        # 默认:原生可编辑 .pptx
 python scripts/validate_pptx.py deck.pptx                       # 成品 OOXML 校验
 python scripts/thumbnail.py out.deck.json grid.png             # 整份缩略图,一眼看全
@@ -97,7 +98,7 @@ python scripts/thumbnail.py out.deck.json grid.png             # 整份缩略图
 - **容器**:`row` / `col` / `grid`(`gap` / `sizes` / `cols`,可任意嵌套)
 - **文本/卡片**:`text` `bullets` `card` `panel` `iconitem` `imagecard` `personcard` `quote`
 - **数字**:`stat` `hero` `gauge`
-- **流程/结构**:`arrowflow` `timeline` `milestone` `funnel` `quadrant` `balance` `regions` `orgchart`
+- **流程/结构**:`arrowflow` `timeline` `milestone` `roadmap` `funnel` `quadrant` `balance` `regions` `orgchart`
 - **进度/对比**:`progresslist` `pricing`
 - **图表**:`chart`(column/bar/line/area/pie/donut/radar) + `heatmap`
 - **固定版式预设**:cover / agenda / section / closing 等(快速骨架用)
@@ -110,6 +111,7 @@ python scripts/thumbnail.py out.deck.json grid.png             # 整份缩略图
 
 | 用途 | 命令 |
 |---|---|
+| 内容卡口(防空白/骨架页) | `lint_content.py` |
 | 大纲→布局 | `outline_to_schema.py` |
 | 生成(默认,可编辑) | `schema_to_pptx.js` |
 | 生成(母版保真) | `schema_to_pptx_tpl.py` |

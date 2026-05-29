@@ -28,20 +28,18 @@ function buildSvg(set, name, color) {
   const h = ic.height || j.height || 24;
   const left = ic.left || 0;
   const top = ic.top || 0;
-  let body = ic.body;
-  let root;
-  if (set === 'lucide') {
-    root = `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-  } else {
-    // Force monochrome in the target color so NO icon ever renders black:
-    // recolor currentColor + every hardcoded fill/stroke hex (e.g. icon-park multicolor's #333/#000),
-    // while preserving fill="none"/stroke="none".
-    body = body
-      .split('currentColor').join(color)
-      .replace(/(fill|stroke)="#[0-9a-fA-F]{3,8}"/g, `$1="${color}"`)
-      .replace(/(fill|stroke):\s*#[0-9a-fA-F]{3,8}/g, `$1:${color}`);
-    root = `fill="${color}" stroke="${color}"`;
-  }
+  // Force monochrome in the target color so NO icon ever renders black. Recolor
+  // currentColor + every hardcoded fill/stroke hex (lucide wraps paths in
+  // <g stroke="currentColor">; icon-park multicolor bakes #333/#000), while preserving
+  // fill="none"/stroke="none". This must run for EVERY set — lucide included.
+  const body = ic.body
+    .split('currentColor').join(color)
+    .replace(/(fill|stroke)="#[0-9a-fA-F]{3,8}"/g, `$1="${color}"`)
+    .replace(/(fill|stroke):\s*#[0-9a-fA-F]{3,8}/g, `$1:${color}`);
+  // root carries `color` too, so any residual currentColor still resolves to our color.
+  const root = set === 'lucide'
+    ? `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" color="${color}"`
+    : `fill="${color}" stroke="${color}" color="${color}"`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${left} ${top} ${w} ${h}" ${root}>${body}</svg>`;
 }
 

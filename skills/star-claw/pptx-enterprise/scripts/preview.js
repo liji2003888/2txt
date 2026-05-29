@@ -81,6 +81,20 @@ for (const el of slide.elements || []) {
         if (ct) svg += `<text x="${cx + cw / 2}" y="${cy + rh / 2 + 4}" font-size="12" fill="${cell.color || '#333'}" text-anchor="middle" font-family="sans-serif"${cell.bold ? ' font-weight="bold"' : ''}>${esc(ct)}</text>`;
       }
     }
+  } else if (el.type === 'chart') {
+    // native charts don't render in resvg; draw the same SVG chart used by the rasterizer
+    // so visual QA sees the real chart (otherwise chart slides look half-empty / blank).
+    const c = {
+      type: el.chartType || 'column',
+      labels: (el.data && el.data.labels) || [],
+      series: (el.data && el.data.series) || [],
+      colors: el.themeColors,
+    };
+    try {
+      svg += `<g transform="translate(${x},${y})">${chartInner(c, w, h, 'sans-serif')}</g>`;
+    } catch (e) {
+      svg += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#F0F4FA" stroke="#C9D4E3"/><text x="${x + w / 2}" y="${y + h / 2}" font-size="13" fill="#8A95A5" text-anchor="middle" font-family="sans-serif">[${esc(c.type)} chart]</text>`;
+    }
   } else if (el.type === 'text') {
     const sz = el.fontSize || 18, color = el.defaultColor || '#000000';
     const lines = wrap(stripHtml(el.content), w, sz), lh = sz * 1.3;

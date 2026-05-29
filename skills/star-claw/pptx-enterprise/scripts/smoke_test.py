@@ -78,6 +78,36 @@ def main() -> int:
         else:
             check("template(master) -> .pptx", True, f"skipped (missing {base})")
 
+    # content-density gate: must PASS the good sample and FAIL a thin/blank deck
+    r_good = subprocess.run([sys.executable, str(SCRIPTS / "lint_content.py"), str(sample)], capture_output=True, text=True)
+    thin = tmp / "thin.json"
+    thin.write_text(json.dumps({"title": "t", "slides": [
+        {"title": "空页", "body": {"type": "grid", "cols": 3, "items": []}},
+        {"title": "骨架页", "body": {"type": "card", "title": "x"}},
+    ]}, ensure_ascii=False), encoding="utf-8")
+    r_thin = subprocess.run([sys.executable, str(SCRIPTS / "lint_content.py"), str(thin)], capture_output=True, text=True)
+    ok &= check("content gate (passes good, fails thin)", r_good.returncode == 0 and r_thin.returncode == 1,
+                f"good={r_good.returncode} thin={r_thin.returncode}")
+
+    # anti-blank-page: unknown component type + empty container must still render visible content
+    blank = tmp / "blank.json"
+    blank.write_text(json.dumps({"title": "t", "slides": [
+        {"title": "未知组件", "body": {"type": "row", "items": [
+            {"type": "infobox", "title": "能做", "body": "自动化日常任务"},
+            {"type": "list", "items": ["要点一", "要点二"]}]}},
+    ]}, ensure_ascii=False), encoding="utf-8")
+    rb = subprocess.run([sys.executable, str(SCRIPTS / "outline_to_schema.py"), str(blank)], capture_output=True, text=True)
+    no_blank = True
+    if rb.returncode == 0:
+        bd = json.loads(rb.stdout)
+        content_slide = bd["slides"][-1]
+        non_chrome = [e for e in content_slide["elements"] if not e.get("role") == "chrome"]
+        # header(title)=~2 + chrome; a rendered body adds many more text/shape elements
+        texts = [e for e in non_chrome if e["type"] == "text"]
+        no_blank = len(texts) >= 5 and not rb.stderr.strip()
+    ok &= check("no blank pages (aliases + fallback render)", rb.returncode == 0 and no_blank,
+                rb.stderr.strip()[:160] or f"{len(json.loads(rb.stdout)['slides'][-1]['elements'])} els")
+
     print(f"\nArtifacts in {tmp}")
     return 0 if ok else 1
 

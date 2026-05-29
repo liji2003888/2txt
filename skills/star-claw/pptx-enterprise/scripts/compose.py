@@ -10,6 +10,53 @@ from layouts import txt, rect, card, icon_img, accent_for, _text_w, new_id, W, H
 
 PAD = 18  # inner padding for panels/cards
 
+# Common synonyms a model may invent → the canonical component this engine renders.
+# This keeps weak/varied models from producing blank slides when they pick a reasonable
+# but non-exact type name (the #1 cause of empty pages seen in the field).
+ALIASES = {
+    "list": "bullets", "bulletlist": "bullets", "bullet": "bullets", "points": "bullets", "ul": "bullets",
+    "infobox": "card", "box": "card", "feature": "card", "featurecard": "card", "tile": "card",
+    "statement": "hero", "definition": "hero", "keypoint": "hero", "headline": "hero", "bignumber": "hero",
+    "process": "arrowflow", "flow": "arrowflow", "steps": "arrowflow", "stepflow": "arrowflow", "pipeline": "arrowflow",
+    "comparison": "balance", "compare": "balance", "versus": "balance", "vs": "balance",
+    "swot": "quadrant", "2x2": "quadrant", "fourquadrant": "quadrant",
+    "metric": "stat", "kpi": "stat", "number": "stat", "bignum": "stat",
+    "testimonial": "personcard", "person": "personcard", "voice": "personcard",
+    "org": "orgchart", "hierarchy": "orgchart", "tree": "orgchart",
+    "arch": "architecture", "stack": "architecture", "layered": "architecture",
+    "ranking": "regions", "distribution": "regions", "rank": "regions",
+    "progress": "progresslist", "progressbar": "progresslist", "bars": "progresslist",
+    "picture": "image", "photo": "image", "img": "image",
+    "paragraph": "text", "para": "text", "p": "text",
+    "callout": "card", "note": "card",
+    "graph": "chart", "barchart": "chart", "linechart": "chart",
+}
+# Every component type the engine knows how to draw (canonical names).
+KNOWN_TYPES = {
+    "row", "col", "grid", "card", "stat", "panel", "iconitem", "bullets", "text", "spacer",
+    "chart", "image", "hero", "quote", "timeline", "arrowflow", "quadrant", "funnel", "gauge",
+    "balance", "radar", "heatmap", "imagecard", "personcard", "regions", "progresslist",
+    "pricing", "milestone", "orgchart", "architecture", "house", "roadmap",
+}
+
+
+def _normalize(node):
+    """Recursively rewrite synonym type names to canonical ones so the engine renders them."""
+    if not isinstance(node, dict):
+        return node
+    t = node.get("type")
+    if isinstance(t, str) and t not in KNOWN_TYPES:
+        node["type"] = ALIASES.get(t.lower().replace("-", "").replace("_", ""), t)
+    for it in (node.get("items") if isinstance(node.get("items"), list) else []):
+        _normalize(it)
+    for key in ("left", "right", "root"):
+        if isinstance(node.get(key), dict):
+            _normalize(node[key])
+    for key in ("children", "pillars", "layers", "plans", "phases"):
+        for it in (node.get(key) if isinstance(node.get(key), list) else []):
+            _normalize(it)
+    return node
+
 
 def _lerp_hex(c1, c2, t):
     a = c1.lstrip("#"); b = c2.lstrip("#")
@@ -99,6 +146,8 @@ def measure(node, pal, w):
         return node.get("h", 320)
     if t == "milestone":
         return node.get("h", 240)
+    if t == "roadmap":
+        return node.get("h", 260)
     if t == "orgchart":
         return node.get("h", 300)
     if t == "architecture":
@@ -113,13 +162,15 @@ def measure(node, pal, w):
 def _measure_container(node, pal, w):
     items = node.get("items", [])
     gap = node.get("gap", 16)
+    if not items:
+        return 40
     if node["type"] == "row":
         sizes = node.get("sizes") or [1] * len(items)
         tot = sum(sizes) or 1
         inner_w = w - gap * (len(items) - 1)
         return max((measure(it, pal, inner_w * s / tot) for it, s in zip(items, sizes)), default=40)
     if node["type"] == "grid":
-        cols = node.get("cols", 2)
+        cols = min(node.get("cols", 2), len(items))
         rows = (len(items) + cols - 1) // cols
         cw = (w - gap * (cols - 1)) / cols
         rowh = [max((measure(items[r * cols + c], pal, cw) for c in range(cols) if r * cols + c < len(items)), default=0) for r in range(rows)]
@@ -128,23 +179,48 @@ def _measure_container(node, pal, w):
     return sum(measure(it, pal, w) for it in items) + gap * (max(0, len(items) - 1))
 
 
+# components that genuinely want to fill the available height (charts/diagrams/nested
+# containers). Text/card/panel rows should instead size to content and center, so a
+# sparse row doesn't render as a few tall, mostly-empty boxes.
+FILL_HUNGRY = {
+    "chart", "image", "imagecard", "gauge", "radar", "balance", "quadrant", "funnel",
+    "orgchart", "architecture", "house", "roadmap", "milestone", "timeline", "heatmap",
+    "pricing", "row", "col", "grid",
+}
+
+
+def _wants_fill(node):
+    return isinstance(node, dict) and node.get("type") in FILL_HUNGRY
+
+
 # ---------- placement (emit elements) ----------
 
 def place(node, pal, x, y, w, h, els):
     t = node.get("type", "text")
     if t == "row":
         items = node.get("items", [])
+        if not items:
+            return
         gap = node.get("gap", 16)
         sizes = node.get("sizes") or [1] * len(items)
         tot = sum(sizes) or 1
         inner_w = w - gap * (len(items) - 1)
+        widths = [inner_w * s / tot for s in sizes]
+        # equal-height columns sized to tallest content, vertically centered — unless a
+        # child needs to fill (chart/diagram/nested container), then keep the full band.
+        if not any(_wants_fill(it) for it in items):
+            nat = max((measure(it, pal, cw) for it, cw in zip(items, widths)), default=h)
+            band = min(h, nat)
+            y = y + (h - band) / 2
+            h = band
         cx = x
-        for it, s in zip(items, sizes):
-            cw = inner_w * s / tot
+        for it, cw in zip(items, widths):
             place(it, pal, cx, y, cw, h, els)
             cx += cw + gap
     elif t == "col":
         items = node.get("items", [])
+        if not items:
+            return
         gap = node.get("gap", 16)
         nat = [measure(it, pal, w) for it in items]
         avail = h - gap * (max(0, len(items) - 1))
@@ -158,11 +234,21 @@ def place(node, pal, x, y, w, h, els):
             cy += ph + gap
     elif t == "grid":
         items = node.get("items", [])
+        if not items:
+            return
         gap = node.get("gap", 16)
-        cols = node.get("cols", 2)
+        cols = min(node.get("cols", 2), len(items))
         rows = (len(items) + cols - 1) // cols
         cw = (w - gap * (cols - 1)) / cols
         ch = (h - gap * (rows - 1)) / rows
+        # if the cards don't need to fill, cap row height to natural content + center the
+        # block vertically, so a short card grid isn't blown up into tall empty cards.
+        if not any(_wants_fill(it) for it in items):
+            nat = max((measure(it, pal, cw) for it in items), default=ch)
+            ch_nat = min(ch, max(nat, 96))
+            block = ch_nat * rows + gap * (rows - 1)
+            y = y + max(0, (h - block) / 2)
+            ch = ch_nat
         for i, it in enumerate(items):
             r, c = divmod(i, cols)
             place(it, pal, x + c * (cw + gap), y + r * (ch + gap), cw, ch, els)
@@ -499,6 +585,34 @@ def _component(node, pal, x, y, w, h, els):
             els.append(txt(it.get("title", ""), int(cx - cw / 2) + 12, int(cy0) + 32, int(cw) - 24, 24, 13, pal["ink"], bold=True, font=pal["font"]))
             if it.get("body"):
                 els.append(txt(it["body"], int(cx - cw / 2) + 12, int(cy0) + 56, int(cw) - 24, int(cardh) - 64, 11, pal["muted"], font=pal["font"]))
+    elif t == "roadmap":
+        # phased plan: connected columns, each a card with a colored header (name + time)
+        # and a short bullet list. Connecting chevrons convey forward motion.
+        phases = node.get("phases", node.get("items", []))
+        n = max(1, len(phases))
+        gap = 22
+        pw = (w - gap * (n - 1)) / n
+        hdr = 48
+        for i, p in enumerate(phases):
+            p = p if isinstance(p, dict) else {"name": str(p)}
+            px = x + i * (pw + gap)
+            accent = accent_for(pal, i, p)
+            els.append(card(int(px), y, int(pw), h, pal["light"]))
+            els.append(rect(int(px), y, int(pw), hdr, accent, shape="roundRect"))
+            nm = p.get("name", p.get("title", ""))
+            has_time = bool(p.get("time"))
+            els.append(txt(nm, int(px) + 12, y + (6 if has_time else 0), int(pw) - 24, 24, 14, "#FFFFFF",
+                           bold=True, align="center", valign=("top" if has_time else "middle"), font=pal["font"]))
+            if has_time:
+                els.append(txt(str(p["time"]), int(px) + 12, y + 27, int(pw) - 24, 18, 11, "#DCE8F7", align="center", font=pal["font"]))
+            iy = y + hdr + 14
+            for it in p.get("items", [])[:6]:
+                tx = (it.get("text") or it.get("title") or "") if isinstance(it, dict) else str(it)
+                els.append(rect(int(px) + 16, iy + 7, 6, 6, accent, shape="ellipse"))
+                els.append(txt(str(tx), int(px) + 28, iy, int(pw) - 42, 24, 12, pal["ink"], valign="middle", font=pal["font"]))
+                iy += 26
+            if i < n - 1:
+                els.append(txt("➜", int(px + pw), y, gap, hdr, 18, accent, bold=True, align="center", valign="middle", font=pal["font"]))
     elif t == "orgchart":
         root = node.get("root", {})
         children = node.get("children", [])
@@ -579,7 +693,30 @@ def _component(node, pal, x, y, w, h, els):
             base = "   ·   ".join(base)
         els.append(rect(x, y + h - base_h, w, base_h, pal["navy"], shape="roundRect"))
         els.append(txt(base, x, y + h - base_h, w, base_h, 14, "#FFFFFF", bold=True, align="center", valign="middle", font=pal["font"]))
-    # spacer: nothing
+    elif t == "spacer":
+        pass  # intentional whitespace
+    else:
+        # Unknown component type — NEVER vanish silently (that is what causes blank pages).
+        # Render whatever textual content the node carries inside a light panel so the
+        # content is visible and QA can catch the wrong type.
+        title = node.get("title") or node.get("name") or node.get("label") or node.get("kicker")
+        body = node.get("body") or node.get("text") or node.get("value") or node.get("quote") or node.get("desc")
+        items = node.get("items") if isinstance(node.get("items"), list) else None
+        els.append(card(x, y, w, h, pal["light"]))
+        accent = accent_for(pal, node.get("_i", 0), node)
+        els.append(rect(x, y, 5, h, accent, shape="roundRect"))
+        cy = y + PAD
+        if title:
+            els.append(txt(str(title), x + PAD + 6, cy, w - 2 * PAD - 6, 26, 16, pal["ink"], bold=True, font=pal["font"]))
+            cy += 30
+        if items:
+            for it in items[:6]:
+                tx = (it.get("text") or it.get("title") or "") if isinstance(it, dict) else str(it)
+                els.append(rect(x + PAD + 6, cy + 7, 7, 7, accent, shape="ellipse"))
+                els.append(txt(str(tx), x + PAD + 22, cy, w - 2 * PAD - 28, 24, 13, pal["ink"], valign="middle", font=pal["font"]))
+                cy += 28
+        elif body:
+            els.append(txt(str(body), x + PAD + 6, cy, w - 2 * PAD - 6, h - (cy - y) - PAD, 13, pal["muted"], font=pal["font"]))
 
 
 def _tag_indices(node):
@@ -599,6 +736,7 @@ def compose_slide(spec, pal, content_box):
     body = spec.get("body")
     if not body:
         return els
+    _normalize(body)
     _tag_indices(body)
     place(body, pal, x0, y0, x1 - x0, y1 - y0, els)
     return els

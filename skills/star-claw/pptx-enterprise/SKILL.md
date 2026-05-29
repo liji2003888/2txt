@@ -48,7 +48,7 @@ Components:
 - text/containers: `text` (`text`/`size`/`bold`/`align`), `bullets` (`items`), `spacer`
 - cards & panels: `card` (`title`/`body`/`icon`/`metric`/`tag`/`tone:light|blue|navy`/`accent`), `panel` (`title`/`tone`/`items:[...]`), `iconitem` (`icon`/`title`/`body`), `imagecard` (`src`/`title`/`body`), `personcard` (`avatar`/`name`/`role`/`quote`), `quote` (`text`/`author`/`tone`)
 - numbers & emphasis: `stat` (`value`/`label`/`note`), `hero` (`kicker`/`value`/`label`)
-- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `milestone` (里程碑, alternating cards, `items:[{date,title,body}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`), `orgchart` (组织架构, `root`/`children:[{title,items}]`), `architecture` (技术架构, `layers:[{name,items}]`), `house` (战略屋, `roof`/`pillars:[{title,items}]`/`base`)
+- flows & structures: `arrowflow`/`steps` (`items:[{title,sub}]`), `timeline` (`items:[{date,title}]`), `milestone` (里程碑, alternating cards, `items:[{date,title,body}]`), `roadmap` (分期路线图, `phases:[{name,time,items}]`), `funnel` (`items:[{label,value}]`), `quadrant` (SWOT, `items:[4×{title,items}]`), `balance` (对比天平, `left`/`right`), `regions` (区域分布, `items:[{name,value}]`), `orgchart` (组织架构, `root`/`children:[{title,items}]`), `architecture` (技术架构, `layers:[{name,items}]`), `house` (战略屋, `roof`/`pillars:[{title,items}]`/`base`)
 - progress & compare: `progresslist` (进度条, `items:[{label,value}]`), `pricing` (方案对比, `plans:[{name,price,items,featured}]`)
 - charts: `chart` (`chartType`: column/bar/line/area/pie/donut/radar; `labels`/`series`), `gauge` (进度环, `value`/`label`), `image` (`src`)
 
@@ -155,10 +155,14 @@ To add or update the master: strip example slides from a branded `.pptx` (keep m
 Write the deck JSON yourself (a `title`/meta + `slides`, each a `body` tree as in *Authoring slides* above), then:
 
 ```bash
+python scripts/lint_content.py deck.json                        # CONTENT GATE: must say CONTENT OK (no thin/blank pages)
+python scripts/lint_variety.py deck.json                        # variety check: must say VARIETY OK
 python scripts/outline_to_schema.py deck.json > out.deck.json   # resolves icons/charts/gradients + adds chrome
 python scripts/validate.py out.deck.json                        # JSON check before render
 node   scripts/schema_to_pptx.js out.deck.json out.pptx         # render (default, editable)
 ```
+
+**Run `lint_content.py` on your outline BEFORE rendering — it is the hard gate against the #1 failure (thin/blank pages).** It fails any deck with a `BLANK` page (a body whose container is empty → renders nothing) or a `THIN` page (a title + a few lone words, no real substance and no chart/diagram). If it fails, **add real content or merge/split pages — do not render until it passes.** The engine is also forgiving: unknown component-type names are auto-mapped to the closest real component (e.g. `list`→`bullets`, `infobox`→`card`, `process`→`arrowflow`), and a truly unknown type still renders its text in a visible panel rather than vanishing — but that is a safety net, not a substitute for writing real content.
 
 `outline_to_schema.py` also accepts slides that name a fixed `layout` (e.g. `cover`/`agenda`/`section`/`closing`, plus presets like `cards`/`process`/`dashboard`/`timeline`/`matrix`/`pyramid`/`gantt`/`roadmap`/`cases` …). Use those for chrome slides and as quick presets; for content slides prefer `body` trees. Slides may also carry `"banner"` (a navy + red-cap takeaway bar) and `"notes"` (speaker notes); shapes support `"shadow": true`.
 
@@ -218,7 +222,9 @@ To put a real, still-editable template cover in front of a generated deck:
 
 Your first render is almost never perfect. If you found zero issues, you weren't looking hard enough. Run all three checks and a fix-verify loop before declaring done:
 
-**a) Variety QA** — `python scripts/lint_variety.py outline.json` → must say `VARIETY OK`.
+**a) Structure QA** — both must pass on the outline:
+- `python scripts/lint_content.py outline.json` → must say `CONTENT OK` (no `THIN`/`BLANK` pages). **This is the gate against thin/blank pages — fix any failure by adding real content before continuing.**
+- `python scripts/lint_variety.py outline.json` → must say `VARIETY OK`.
 
 **b) Content QA** — extract the rendered text and scan it:
 ```bash
@@ -259,6 +265,7 @@ See `references/schema_authoring.md` for authoring guidance and pitfalls.
 |---|---|
 | Generate (default, editable) | `node scripts/schema_to_pptx.js deck.json out.pptx` |
 | Generate on TCL master | `python scripts/schema_to_pptx_tpl.py deck.json out.pptx` |
+| **Content gate (anti thin/blank)** | `python scripts/lint_content.py outline.json` |
 | Variety lint (anti-monotony) | `python scripts/lint_variety.py outline.json` |
 | Validate JSON deck | `python scripts/validate.py deck.json` |
 | **Validate output .pptx (OOXML integrity)** | `python scripts/validate_pptx.py out.pptx` |
