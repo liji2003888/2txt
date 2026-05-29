@@ -27,7 +27,7 @@ Approach every deck like a senior solution/presentation consultant: **content lo
 
 **⑤ 逐页布局 (Compose each slide).** For each slide: pick structure from the **content-shape map** (not default cards) → compose **2–3 elements into one point** (see *Compose each slide as ONE point*) → write copy **通俗易懂** → mark at most one key node red. Keep deck-wide **variety** (no repeat on consecutive slides; ≥6–10 distinct structures; cards ≤⅓).
 
-**⑥ 自检与出片 (QA & render).** Run `python scripts/lint_variety.py outline.json` until `VARIETY OK`; `python scripts/validate.py deck.json`; render with **`node scripts/schema_to_pptx.js` (default, editable)**; if a renderer is available, `scripts/preview.js`/`render_inspect.py` to eyeball for overflow/overlap, then iterate.
+**⑥ 自检与出片 (QA & render).** Render with **`node scripts/schema_to_pptx.js` (default, editable)**, then run QA as a **bug hunt** (see *QA is a bug hunt* below): variety (`lint_variety` → `VARIETY OK`), schema (`validate.py`), content (extract text + grep for placeholder/filler), and visual (`preview_all.py` → inspect every slide against the checklist, ideally with a fresh-eyes subagent). Fix and re-verify until a clean pass — first render is never perfect.
 
 **⑦ 终审 (Review against the goal).** Re-read against ① — does every slide advance the governing message? Is the conclusion unmistakable and (for reports) the ask explicit? Trim, then deliver.
 
@@ -243,11 +243,34 @@ To put a real, still-editable template cover in front of a generated deck:
 
 `merge_pptx` copies shapes + images (re-embedding them); it does **not** copy charts on the *added* slides — keep charts in the base deck. (Alternative single-file cover that needs no template at generation time: the `cover` layout with `theme.coverImage`, see Themes.)
 
-### 4. Always run visual QA after generation
+### 4. QA is a bug hunt, not a confirmation — assume there ARE problems
 
-- `python scripts/render_inspect.py <file.pptx> [out_dir]` renders each slide to PNG via LibreOffice + pdftoppm.
-- **No LibreOffice?** `node scripts/preview.js <deck.json> <slideIndex> <out.png>` rasterizes one slide to PNG via resvg-js (embeds images/icons; CJK needs an installed CJK font). Fast layout/overlap check that works in any sandbox.
-- If the agent model has vision, open the PNGs and check: text overflow, element overlap, color/font deviation, missing CJK glyphs, then iterate. If the model has no vision, this step is manual (or skipped) — generation/validation does not depend on it.
+Your first render is almost never perfect. If you found zero issues, you weren't looking hard enough. Run all three checks and a fix-verify loop before declaring done:
+
+**a) Variety QA** — `python scripts/lint_variety.py outline.json` → must say `VARIETY OK`.
+
+**b) Content QA** — extract the rendered text and scan it:
+```bash
+python -m markitdown out.pptx        # or: python scripts/dump_pptx.py out.pptx
+python -m markitdown out.pptx | grep -iE "lorem|ipsum|xxxx|占位|示例|标题文字|your title|请单击"
+```
+If the grep matches, you left placeholder/filler text — fix it. Also check for missing content, typos, wrong order, fabricated numbers.
+
+**c) Visual QA** — render every slide and inspect:
+```bash
+python scripts/preview_all.py deck.json out.preview/     # resvg, no LibreOffice (default)
+# or, if LibreOffice is available: python scripts/render_inspect.py out.pptx
+```
+If the agent model has vision (or a fresh-eyes **subagent** is available — strongly preferred, you've been staring at the JSON and will see what you expect), inspect each PNG against this checklist:
+- Overlapping elements (text through shapes, lines through words, stacked boxes)
+- Text overflow / clipped at a box or slide edge; a box too narrow causing ugly wrapping
+- A title that wrapped to 2 lines but the divider/elements were placed for 1
+- Footer/banner/citation colliding with content above
+- Gaps < ~14px or wildly uneven gaps; insufficient margin from slide edges
+- Columns/cards not aligned; low-contrast text or icons (light on light / dark on dark)
+- Leftover placeholder content
+
+**Verification loop:** list issues → fix → **re-render the affected slides and look again** (one fix often creates another) → repeat until a full pass is clean. Don't declare success until you've completed at least one fix-and-verify cycle. (No vision and no subagent? Rely on `lint_variety` + content grep + the engine's auto-layout, and say you couldn't do visual QA.)
 
 ## Schema essentials
 
@@ -269,9 +292,9 @@ The two outputs are **content-consistent, not pixel-consistent**. PowerPoint and
 
 ## Sandbox requirements & self-check
 
-- Python ≥ 3.9 with `python-pptx`, `jsonschema` (see `requirements.txt`)
-- Node ≥ 18 with `pptxgenjs`, `pptxtojson` (see `package.json`)
-- `soffice` (LibreOffice headless, with Impress import filters) and poppler-utils (`pdftoppm` or `pdftocairo`) for QA rendering
+- Python ≥ 3.9 with `python-pptx`, `jsonschema` (see `requirements.txt`); optional `markitdown[pptx]` for content QA (text extraction)
+- Node ≥ 18 with `pptxgenjs`, `pptxtojson`, `@resvg/resvg-js`, `@iconify-json/*` (see `package.json`)
+- Visual QA renders to PNG via **resvg (`preview_all.py`, no extra deps)** by default; `render_inspect.py` additionally needs `soffice` + poppler-utils for a true PowerPoint render
 - CJK fonts installed: `Noto Sans CJK SC` or `Source Han Sans` (otherwise headless rendering corrupts Chinese)
 
 Setup (run once in the skill dir):
