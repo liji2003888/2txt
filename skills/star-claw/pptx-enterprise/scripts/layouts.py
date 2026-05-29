@@ -141,10 +141,17 @@ def header(title, pal):
     # TCL standard header: dark navy bold title pinned to the top + a thin light-gray divider.
     els = []
     if pal.get("badge"):
-        els.append(txt(title, 84, 8, 800, 40, 28, pal["titleColor"], bold=True, valign="middle", font=pal["font"]))
+        # cap the title to the area left of the logo/olympic-rings chrome (logo starts ~x=796);
+        # auto-shrink the font for very long titles so they never collide with the logo or wrap.
+        avail = 690
+        size = 28
+        tw = _text_w(title, size)
+        if tw > avail:
+            size = max(18, int(size * avail / tw))
+        els.append(txt(title, 84, 8, avail, 44, size, pal["titleColor"], bold=True, valign="middle", font=pal["font"]))
         # thin gray divider under the title; tagged headerline so the master path skips it
         # (the master '标题幻灯片' layout draws its own gray divider).
-        uw = int(min(max(_text_w(title, 28) + 30, 340), 760))
+        uw = int(min(max(_text_w(title, size) + 30, 340), avail))
         line = rect(84, 56, uw, 2, pal["headerline"])
         line["role"] = "headerline"
         els.append(line)
