@@ -17,6 +17,8 @@ def main():
     src, outdir = sys.argv[1], Path(sys.argv[2])
     z = zipfile.ZipFile(src)
     for n in z.namelist():
+        if n.endswith("/"):
+            continue  # skip directory entries
         data = z.read(n)
         dest = outdir / n
         dest.parent.mkdir(parents=True, exist_ok=True)
