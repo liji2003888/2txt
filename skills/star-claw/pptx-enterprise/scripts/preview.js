@@ -3,6 +3,7 @@
 // usage: preview.js <deck.json> <slideIndex> <out.png>
 const fs = require('fs');
 const { Resvg } = require('@resvg/resvg-js');
+const { chartInner } = require('./chart_img.js');
 
 const [deckPath, idxStr, outPath] = process.argv.slice(2);
 if (!deckPath || !outPath) {

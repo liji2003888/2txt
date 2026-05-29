@@ -155,21 +155,28 @@ for (const slide of deck.slides) {
         border: { type: 'solid', pt: 1, color: 'D9DEE5' },
       });
     } else if (el.type === 'chart') {
-      const chartTypeMap = {
-        bar: pres.ChartType.bar,
-        line: pres.ChartType.line,
-        pie: pres.ChartType.pie,
-        area: pres.ChartType.area,
-        scatter: pres.ChartType.scatter,
+      // native, editable charts. column/bar share ChartType.bar with barDir; donut = doughnut.
+      const t = el.chartType || 'column';
+      const typeMap = {
+        column: pres.ChartType.bar, bar: pres.ChartType.bar,
+        line: pres.ChartType.line, area: pres.ChartType.area,
+        pie: pres.ChartType.pie, donut: pres.ChartType.doughnut, doughnut: pres.ChartType.doughnut,
+        radar: pres.ChartType.radar, scatter: pres.ChartType.scatter,
       };
       const seriesIn = (el.data && el.data.series) || [];
       const labels = (el.data && el.data.labels) || [];
       const data = seriesIn.map((ser) => ({ name: ser.name, labels, values: ser.values || [] }));
-      s.addChart(chartTypeMap[el.chartType] || pres.ChartType.bar, data, {
+      const opts = {
         ...box,
-        showLegend: true,
-        chartColors: el.themeColors,
-      });
+        showLegend: seriesIn.length > 1 || t === 'pie' || t === 'donut',
+        legendPos: 'b',
+        chartColors: (el.themeColors || []).map(stripHash),
+      };
+      if (t === 'bar') opts.barDir = 'bar';
+      if (t === 'column') opts.barDir = 'col';
+      if (t === 'donut' || t === 'doughnut') opts.holeSize = 55;
+      if (t === 'area') opts.chartColorsOpacity = [60, 80];
+      s.addChart(typeMap[t] || pres.ChartType.bar, data, opts);
     } else if (el.type === 'latex') {
       if (el.path) s.addImage({ ...box, data: el.path });
     }

@@ -132,6 +132,26 @@ def render_line(slide, el, sx, sy):
     conn.line.width = Pt(el.get("width", 1))
 
 
+def render_chart(slide, el, sx, sy):
+    from pptx.chart.data import CategoryChartData
+    from pptx.enum.chart import XL_CHART_TYPE as XL
+    t = el.get("chartType", "column")
+    tmap = {
+        "column": XL.COLUMN_CLUSTERED, "bar": XL.BAR_CLUSTERED, "line": XL.LINE_MARKERS,
+        "area": XL.AREA, "pie": XL.PIE, "donut": XL.DOUGHNUT, "doughnut": XL.DOUGHNUT,
+        "radar": XL.RADAR,
+    }
+    data = el.get("data", {})
+    cd = CategoryChartData()
+    cd.categories = data.get("labels", []) or [""]
+    series = data.get("series", []) or [{"name": "", "values": []}]
+    for ser in series:
+        cd.add_series(ser.get("name", ""), tuple(ser.get("values", [])))
+    slide.shapes.add_chart(tmap.get(t, XL.COLUMN_CLUSTERED),
+                           Emu(int(el["left"] * sx)), Emu(int(el["top"] * sy)),
+                           Emu(int(el["width"] * sx)), Emu(int(el["height"] * sy)), cd)
+
+
 def render_image(slide, el, sx, sy):
     src = el.get("src", "")
     if not src or src.startswith("icon:"):
@@ -203,7 +223,10 @@ def main():
                 render_line(slide, el, sx, sy)
             elif t == "image":
                 render_image(slide, el, sx, sy)
-            # chart: rendered only by the PptxGenJS path; skipped here
+            elif t == "chart":
+                render_chart(slide, el, sx, sy)
+        if s.get("remark"):
+            slide.notes_slide.notes_text_frame.text = str(s["remark"])
     prs.save(sys.argv[2])
     print(f"wrote {sys.argv[2]} ({len(deck['slides'])} slides on master '{Path(base).name}')")
 

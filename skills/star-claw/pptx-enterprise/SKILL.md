@@ -282,6 +282,26 @@ If the agent model has vision (or a fresh-eyes **subagent** is available — str
 
 See `references/schema_authoring.md` for authoring guidance and pitfalls.
 
+## Utility scripts (full .pptx lifecycle)
+
+| Need | Command |
+|---|---|
+| Generate (default, editable) | `node scripts/schema_to_pptx.js deck.json out.pptx` |
+| Generate on TCL master | `python scripts/schema_to_pptx_tpl.py deck.json out.pptx` |
+| Variety lint (anti-monotony) | `python scripts/lint_variety.py outline.json` |
+| Validate JSON deck | `python scripts/validate.py deck.json` |
+| **Validate output .pptx (OOXML integrity)** | `python scripts/validate_pptx.py out.pptx` |
+| **Extract text + notes (content QA)** | `python scripts/extract_text.py out.pptx` |
+| Render every slide to PNG | `python scripts/preview_all.py deck.json out.preview/` |
+| **One-glance thumbnail grid** | `python scripts/thumbnail.py deck.json grid.png` |
+| Render one slide (no LibreOffice) | `node scripts/preview.js deck.json N out.png` |
+| Inspect existing deck | `python scripts/dump_pptx.py in.pptx` |
+| Edit existing deck (high-level ops) | `python scripts/edit_pptx.py in.pptx ops.json out.pptx` |
+| **Deep OOXML edit (any XML)** | `python scripts/unpack_pptx.py in.pptx dir/` → edit → `python scripts/pack_pptx.py dir/ out.pptx` |
+| Fill a branded template | `python scripts/template_fill.py tpl.pptx content.json out.pptx` |
+
+Charts (`column`/`bar`/`line`/`area`/`pie`/`donut`/`radar`) are emitted as **native, editable** PowerPoint charts on both render paths; `gauge` (custom ring) is rasterized. Images support `"sizing": {"type": "cover"|"contain"|"crop"}`. Slides take `"notes"` for speaker notes.
+
 ## Output trade-off (be honest with users)
 
 The two outputs are **content-consistent, not pixel-consistent**. PowerPoint and browser engines differ in line-wrapping, font metrics, and autofit. For brand-pixel-perfect deliverables, path 2 (template fill) is authoritative; the HTML rendering is for review/embedding.

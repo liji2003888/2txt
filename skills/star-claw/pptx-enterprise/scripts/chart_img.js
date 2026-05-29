@@ -152,23 +152,31 @@ function radarChart(c, W, H, font) {
   return svg;
 }
 
+// Build chart inner SVG markup positioned within a W×H box (shared by the rasterizer and preview.js).
+function chartInner(c, W, H, font) {
+  font = font || c.font || 'sans-serif';
+  if (c.type === 'pie') return pieChart(c, W, H, font, false);
+  if (c.type === 'donut') return pieChart(c, W, H, font, true);
+  if (c.type === 'gauge') return gaugeChart(c, W, H, font);
+  if (c.type === 'radar') return radarChart(c, W, H, font);
+  return axisChart(c, W, H, font);
+}
+
 function render(c) {
   const W = c.width || 760, H = c.height || 360;
-  const font = c.font || 'sans-serif';
-  let inner;
-  if (c.type === 'pie') inner = pieChart(c, W, H, font, false);
-  else if (c.type === 'donut') inner = pieChart(c, W, H, font, true);
-  else if (c.type === 'gauge') inner = gaugeChart(c, W, H, font);
-  else if (c.type === 'radar') inner = radarChart(c, W, H, font);
-  else inner = axisChart(c, W, H, font);
+  const inner = chartInner(c, W, H, c.font || 'sans-serif');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#FFFFFF"/>${inner}</svg>`;
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: W * 2 } }).render().asPng();
   fs.writeFileSync(c.out, png);
 }
 
-const mf = process.argv[2];
-if (!mf) { console.error('usage: chart_img.js <manifest.json>'); process.exit(2); }
-const items = JSON.parse(fs.readFileSync(mf, 'utf-8'));
-let ok = 0;
-for (const c of items) { try { render(c); ok++; } catch (e) { console.error('chart failed:', e.message); } }
-console.log(`rendered ${ok}/${items.length} charts`);
+module.exports = { chartInner };
+
+if (require.main === module) {
+  const mf = process.argv[2];
+  if (!mf) { console.error('usage: chart_img.js <manifest.json>'); process.exit(2); }
+  const items = JSON.parse(fs.readFileSync(mf, 'utf-8'));
+  let ok = 0;
+  for (const c of items) { try { render(c); ok++; } catch (e) { console.error('chart failed:', e.message); } }
+  console.log(`rendered ${ok}/${items.length} charts`);
+}

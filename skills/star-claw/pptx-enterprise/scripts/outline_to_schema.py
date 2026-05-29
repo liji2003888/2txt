@@ -47,9 +47,11 @@ def resolve_icons(deck: dict) -> None:
 
 
 def resolve_charts(deck: dict) -> None:
-    """Render chart elements to PNG (SVG+resvg) and replace them with image elements,
-    so business charts embed on the master/python-pptx path too."""
+    """Rasterize ONLY custom chart types that have no native equivalent (gauge) to PNG.
+    Real charts (column/bar/line/area/pie/donut/radar) stay as native, editable chart
+    elements — both renderers emit them via PptxGenJS / python-pptx add_chart."""
     import hashlib
+    NATIVE = {"column", "bar", "line", "area", "pie", "donut", "doughnut", "radar", "scatter"}
     theme = deck.get("meta", {}).get("theme") or {}
     font = theme.get("fontName") or "sans-serif"
     todo, refs = [], []
@@ -57,6 +59,8 @@ def resolve_charts(deck: dict) -> None:
         for el in slide["elements"]:
             if el.get("type") != "chart":
                 continue
+            if el.get("chartType", "column") in NATIVE:
+                continue  # keep native/editable
             spec = {
                 "type": el.get("chartType", "column"),
                 "labels": (el.get("data") or {}).get("labels", []),
