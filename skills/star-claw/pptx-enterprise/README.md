@@ -156,8 +156,10 @@ pptx-enterprise/
 ├── scripts/              # 生成/渲染/编辑/QA/工具脚本
 ├── assets/
 │   ├── themes/           # tcl_feishu(默认)/ ocean / midnight / mono
-│   ├── examples/         # training_deck.json 等可模仿范例
+│   ├── examples/         # 6 类材料可模仿范例(training/report/solution/review/product/strategy)
 │   ├── csot_master.pptx  # TCL 母版
 │   └── tcl_logo.png …    # 品牌素材
-└── references/           # schema 编写 / PptxGenJS / AGPL 说明
+└── references/           # schema 编写 / PptxGenJS 速查
 ```
+
+> 无第三方 AGPL/GPL 代码:输出基于 PptxGenJS(MIT)/ python-pptx(MIT),图标 ISC/Apache-2.0 —— 不会给你的 PPT 带来 copyleft 义务。

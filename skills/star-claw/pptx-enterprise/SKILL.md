@@ -314,6 +314,23 @@ python scripts/smoke_test.py   # verifies runtime + generates a sample deck end 
   ```
 - **Webhook (fallback)**: set `LARK_WEBHOOK` (and `LARK_SECRET` for signed bots).
 
-## License notice
+## Deploying into OpenClaw (no surprises)
 
-`web/` will host a fork of PPTist (AGPL-3.0). It is isolated behind the Slide JSON Schema and swappable. See `references/agpl_notice.md` before merging the fork.
+- **Self-contained & portable** — all scripts resolve paths relative to the skill dir (no hardcoded `/home`/`/tmp`). Drop the folder into your skills directory as-is.
+- **Don't copy `node_modules`** (it's ~23MB and gitignored). On first use run `bash setup.sh` (or `npm install` + `pip install -r requirements.txt`) inside the skill dir.
+- **No heavy/system deps for the core path** — generating a `.pptx` needs only Node + Python. `LibreOffice`/`poppler` are optional, only for the LibreOffice-based QA render; default QA uses `preview_all.py` (resvg, bundled). `markitdown` is optional.
+- **No bundled third-party AGPL/GPL code** — output uses PptxGenJS (MIT) / python-pptx (MIT); icons are ISC/Apache-2.0. Nothing here imposes copyleft on your decks.
+- **Distinct skill name** `pptx-enterprise` — won't collide with a generic `pptx` skill; its description triggers on PPT/deck/slide requests.
+
+## 通用 PPT 设计技巧 (apply on top of the engine)
+
+The engine already enforces alignment, consistent spacing, one font, and the brand palette. Spend your judgment on the things it can't decide:
+
+- **视觉层级**:每页一个焦点。用大小/粗细/颜色拉开主次 —— 标题 26–28pt、节标题 18–20、正文 13–15、注释 11–12;关键数字放大成 `hero`/`stat`。
+- **CRAP 四原则**:对比(Contrast,重要的就让它显眼)、重复(Repetition,全篇同一套卡片/间距/配色)、对齐(Alignment,用 `row/col/sizes`,左对齐正文)、亲密(Proximity,相关的靠拢成组、无关的拉开)。
+- **少字、说人话**:正文不写整段;标题写结论句不写名词;一条要点一句话(参见"通俗易懂")。
+- **数字优先**:用具体数字和实名案例胜过形容词("省 1 小时/天">"显著提效")。
+- **数据诚实**:图表从 0 起轴、标单位、别用 3D/花哨装饰;一图说明一件事。
+- **颜色克制**:主蓝统治画面,红色只点睛(每页 ≤1 处);深色块上文字/图标用白色。
+- **留白有度**:不要填满每一寸,但更不能空洞 —— 内容不够就合并、够多就拆页(内容优先)。
+- **首尾有力**:封面点题、`agenda` 给全局、`section` 分隔换节奏、结尾给结论或行动号召。
