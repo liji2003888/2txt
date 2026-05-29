@@ -140,9 +140,20 @@ def resolve_gradients(deck: dict) -> None:
 
 def build(outline: dict, theme: dict) -> dict:
     pal = palette(theme)
-    specs = outline.get("slides", [])
+    specs = list(outline.get("slides", []))
     if not specs:
         specs = [{"layout": "title", "title": outline.get("title", "Untitled"), "subtitle": outline.get("subtitle")}]
+    # Always brand the deck: if a brand theme (cover/master available) and the outline has no
+    # cover slide, auto-prepend one so every generated .pptx opens with the brand cover.
+    has_cover = any(s.get("layout") == "cover" for s in specs)
+    if not has_cover and (theme.get("coverImage") or theme.get("baseTemplate")):
+        specs.insert(0, {
+            "layout": "cover",
+            "title": outline.get("title", "材料标题"),
+            "dept": outline.get("dept"),
+            "author": outline.get("author"),
+            "meta": outline.get("meta"),
+        })
     slides = []
     page = 0
     for spec in specs:
