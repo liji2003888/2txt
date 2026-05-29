@@ -19,7 +19,7 @@ This skill contains **no LLM calls** — every script is plain Python/Node. It w
 
 ### 阶段一 · 内容设计(纯文字,先不碰渲染引擎)
 
-1. **立意**:确定 主题 / 目标(看完让受众相信什么、做什么)/ 受众 / 场景 / 篇幅 / 材料类型;一句话写出**全篇唯一主张**。按材料类型选叙事框架(见 *Material frameworks*)。
+1. **立意**:确定 主题 / 目标(看完让受众相信什么、做什么)/ 受众 / 场景 / 篇幅 / 材料类型;一句话写出**全篇唯一主张**。按材料类型选叙事框架,并**先读 `assets/examples/<type>_deck.json` 学骨架再自己设计**(见 *Material frameworks*)。
 2. **详细大纲**:列出章节 → 每章要回答的核心问题 → **每章预计几页**。**一个章节通常 2–5 页,不是只能一页** —— 该展开就展开(现状一页讲背景、一页讲痛点数据;方案一页总览、几页拆解关键模块)。`agenda` 镜像章节。
 3. **检索补料(web_search)**:逐条标注 *已知可直接写* vs *需检索*;对后者用 OpenClaw `web_search` 取**真实事实/最新数据/实名案例/定义**,并**总结成可上页的句子和数字**;搜并下载**关键图片**(架构图/截图/产品图)经 `image`/`imagecard` 用上。多源核实,**绝不编造数据**。
 4. **逐页内容稿(关键产物)**:为**每一页**写出**真实、完整的内容** —— 标题(结论句)+ 这一页实际要呈现的要点/短段落/数据/示例(**写出真句子,不是占位词**)+ 标注该页用什么版式/组件。内容要"讲透";宁可多开一页,也不要半页空白或一堆光秃秃的名词。
@@ -78,7 +78,9 @@ Before composing slides, fix the **narrative skeleton** for the material type. A
 
 If the material doesn't match these, build a custom spine but keep the discipline: **一条主线、总分结构、每节一个小结论、首页给全局**. Mirror the chosen spine in the `agenda` slide.
 
-Reference decks (one per material type) live in `assets/examples/` — `training_deck` / `report_deck` / `solution_deck` / `review_deck` / `product_deck` / `strategy_deck`. Read the matching one to absorb its spine and composition quality, **then design your own** for the real content (see the "范例只是参考" note above).
+Reference decks (one per material type) live in `assets/examples/` — `training_deck` / `report_deck` / `solution_deck` / `review_deck` / `product_deck` / `strategy_deck`.
+
+> **必做步骤(阶段一开始时):** 确定材料类型后,**先读对应的 `assets/examples/<type>_deck.json`**(如汇报→`report_deck.json`、方案→`solution_deck.json`),吸收它的①叙事骨架(章节顺序与每节作用)和②构图手法(每页如何用组件组合成一个论点、信息密度的质量基线)。**然后丢开它、为真实主题/受众/检索内容从头设计自己的大纲与逐页内容** —— 范例是参照系,不是填空模板,照抄会退回"千篇一律 + 内容稀薄"。没有完全匹配的类型就读最接近的一份 + `training_deck`(变化最丰富)。这些范例**仅供阅读**,不参与渲染管线。
 
 ### Each page = one clear message, fully fleshed out (never sparse)
 
